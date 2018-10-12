@@ -6,9 +6,10 @@ using UnityEngine;
 
 public class Deck : MonoBehaviour
 {
-
     public DrawPile DrawPile;
     public DiscardPile DiscardPile;
+
+    private Player _player;
 
     public void Start()
     {
@@ -19,6 +20,7 @@ public class Deck : MonoBehaviour
         }
         DrawPile = DrawPile ?? GetComponentInChildren<DrawPile>();
         DiscardPile = DiscardPile ?? GetComponentInChildren<DiscardPile>();
+        _player = transform.parent.GetComponent<Player>();
     }
 
     public Card Draw()
