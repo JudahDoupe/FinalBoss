@@ -5,10 +5,6 @@ using UnityEngine;
 
 public class Board : MonoBehaviour {
 
-    public TileCoord Player1Spawn;
-    public TileCoord Player2Spawn;
-    public TileCoord BossSpwan;
-
     public TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
     public Dictionary<TileCoord,Tile> Tiles;
     public List<GameObject> TilePrefabs;
@@ -28,8 +24,6 @@ public class Board : MonoBehaviour {
                 AddTile(new TileCoord(r,q));
             }
         }
-
-        MoveToken(Fight.Player1.Token, Player1Spawn);
     }
 
     public void AddTile(TileCoord coord)
@@ -54,6 +48,10 @@ public class Board : MonoBehaviour {
         Tile tile;
         Tiles.TryGetValue(coord, out tile);
         return tile;
+    }
+    public Tile GetRandomTile()
+    {
+        return Tiles.RandomValue();
     }
     public List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
     {
@@ -92,12 +90,6 @@ public class Board : MonoBehaviour {
             tile.IsSelectable = false;
         }
         return rtn;
-    }
-
-    private void MoveToken(Token token, TileCoord coord)
-    {
-        var tile = GetTile(coord) ?? Tiles.RandomValue();
-        token.Tile = tile;
     }
 }
 

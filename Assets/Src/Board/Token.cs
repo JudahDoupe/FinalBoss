@@ -8,16 +8,30 @@ public class Token : MonoBehaviour
     public Tile Tile;
     public float Speed = 1;
 
-	void Update () {
-	    transform.LookAt(Camera.main.transform);
+    private GameObject _model;
 
+    private void Start()
+    {
+        _model = transform.Find("Model").gameObject;
+    }
 
-        transform.position = Tile.transform.position;
-        return;
-	    if (Vector3.Distance(transform.position, Tile.transform.position) > Speed)
-	    {
-	        var dir = Vector3.Normalize(transform.position - Tile.transform.position);
-	        transform.Translate(dir * Speed,Space.World);
-	    }
+    void Update () {
+        if(Tile == null)
+        {
+            _model.SetActive(false);
+        }
+        else
+        {
+            _model.SetActive(true);
+            transform.LookAt(Camera.main.transform);
+
+            
+
+	        if (Vector3.Distance(transform.position, Tile.transform.position) > Speed * Time.deltaTime)
+	        {
+	            var dir = Vector3.Normalize(Tile.transform.position - transform.position);
+	            transform.Translate(dir * Speed * Time.deltaTime,Space.World);
+	        }
+        }
 	}
 }
