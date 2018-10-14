@@ -17,8 +17,6 @@ public class Fight : MonoBehaviour
     public Player _Player2;
     public Player _Boss;
 
-    public bool Next;
-
     void Start()
     {
         Player1 = _Player1;
@@ -27,14 +25,6 @@ public class Fight : MonoBehaviour
         Board = FindObjectOfType<Board>();
         TurnTimer = FindObjectOfType<TurnTimer>();
         NextTurn();
-    }
-    void Update()
-    {
-        if (Next)
-        {
-            NextTurn();
-            Next = false;
-        }
     }
 
     public static async void NextTurn()
