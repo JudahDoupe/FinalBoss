@@ -8,29 +8,16 @@ public class Deck : MonoBehaviour
 {
     public DrawPile DrawPile;
     public DiscardPile DiscardPile;
+    public Player Player;
 
-    private Player _player;
 
     public void Start()
     {
-        var cards = new Queue<Card>(GetComponentsInChildren<Card>());
-        foreach(var card in cards)
-        {
-            DrawPile.Insert(card);
-        }
+        Player = transform.parent.GetComponent<Player>();
         DrawPile = DrawPile ?? GetComponentInChildren<DrawPile>();
         DiscardPile = DiscardPile ?? GetComponentInChildren<DiscardPile>();
-        _player = transform.parent.GetComponent<Player>();
     }
 
-    public Card Draw()
-    {
-        return DrawPile.Draw();
-    }
-    public void Discard(Card card)
-    {
-        DiscardPile.Insert(card);
-    }
     public void Reshuffle()
     {
         DiscardPile.Shuffle();

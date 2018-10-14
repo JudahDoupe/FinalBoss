@@ -6,16 +6,11 @@ using UnityEngine;
 public class Board : MonoBehaviour {
 
     public TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
-    public Dictionary<TileCoord,Tile> Tiles;
+    public Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
     public List<GameObject> TilePrefabs;
 
     void Start()
     {
-        if (Tiles == null)
-        {
-            Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
-        }
-
         var size = 10;
         for (int r = -size; r < size; r++)
         {

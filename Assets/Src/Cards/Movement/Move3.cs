@@ -20,6 +20,6 @@ public class Move3 : Card
 
     public override async void Discard()
     {
-        Fight.ActivePlayer.MovementDeck.Discard(this);
+        Fight.ActivePlayer.MovementDeck.DiscardPile.Insert(this);
     }
 }

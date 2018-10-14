@@ -13,17 +13,25 @@ public class Pile : MonoBehaviour {
     void Start()
     {
         Deck = Deck ?? transform.parent.GetComponent<Deck>();
+
+        foreach(var card in GetComponentsInChildren<Card>())
+        {
+            Insert(card);
+        }
     }
 
     public Card Draw()
     {
+        if (Deck.Player.Hand.NumCards >= 5)
+            return null;
         return Cards.Count > 0 ? Cards.Dequeue() : null;
     }
     public void Insert(Card card)
     {
         Cards.Enqueue(card);
         card.transform.parent = transform;
-        card.transform.position = transform.position;
+        card.transform.localPosition = Vector3.zero;
+        card.transform.localEulerAngles = Vector3.zero;
     }
     public void Shuffle()
     {

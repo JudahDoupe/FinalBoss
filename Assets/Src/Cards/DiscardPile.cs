@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DiscardPile : Pile {
 
-	void Click()
+    void Click()
     {
         if (Cards.Count > 0)
         {

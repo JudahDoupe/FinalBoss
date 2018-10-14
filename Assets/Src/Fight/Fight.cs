@@ -24,9 +24,9 @@ public class Fight : MonoBehaviour
         Player2 = _Player2;
         Boss = _Boss;
         Board = FindObjectOfType<Board>();
-        ActivePlayer = Boss;
+        NextTurn();
     }
-    private void Update()
+    void Update()
     {
         if (Next)
         {
@@ -37,13 +37,13 @@ public class Fight : MonoBehaviour
 
     public static async void NextTurn()
     {
-        SetPlayerActive(ActivePlayer, false);
+        ActivePlayer?.SetActive(false);
 
         if (ActivePlayer == Boss)
             ActivePlayer = Player1;
         else if (ActivePlayer == Player1)
             ActivePlayer = Player2;
-        else if (ActivePlayer == Player2)
+        else
             ActivePlayer = Boss;
         
         if(ActivePlayer.Token.Tile == null)
@@ -58,14 +58,7 @@ public class Fight : MonoBehaviour
         }
 
         if(ActivePlayer != Boss)
-            SetPlayerActive(ActivePlayer, true);
+            ActivePlayer.SetActive(true);
     }
 
-    private static void SetPlayerActive(Player player, bool isActive)
-    {
-        player.Hand?.gameObject.SetActive(isActive);
-        player.AttackDeck?.gameObject.SetActive(isActive);
-        player.MovementDeck?.gameObject.SetActive(isActive);
-        player.SpecialDeck?.gameObject.SetActive(isActive);
-    }
 }
