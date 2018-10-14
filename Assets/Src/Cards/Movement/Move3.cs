@@ -15,6 +15,9 @@ public class Move3 : Card
         var tile = await Fight.Board.SelectTile(options);
         if (tile == null) return;
         Fight.ActivePlayer.Token.Tile = tile;
+        Fight.TurnTimer.AddSecond(SecondType.Movement);
+        Fight.TurnTimer.AddSecond(SecondType.Movement);
+        Fight.TurnTimer.AddSecond(SecondType.Movement);
         Discard();
     }
 
