@@ -7,6 +7,7 @@ public class Fight : MonoBehaviour
 {
     public static Board Board;
     public static Player ActivePlayer;
+    public static TurnTimer TurnTimer;
 
     public static Player Player1;
     public static Player Player2;
@@ -24,6 +25,7 @@ public class Fight : MonoBehaviour
         Player2 = _Player2;
         Boss = _Boss;
         Board = FindObjectOfType<Board>();
+        TurnTimer = FindObjectOfType<TurnTimer>();
         NextTurn();
     }
     void Update()
@@ -38,6 +40,7 @@ public class Fight : MonoBehaviour
     public static async void NextTurn()
     {
         ActivePlayer?.SetActive(false);
+        TurnTimer.Clear();
 
         if (ActivePlayer == Boss)
             ActivePlayer = Player1;
@@ -57,7 +60,8 @@ public class Fight : MonoBehaviour
             ActivePlayer.Token.transform.position = tile.transform.position;
         }
 
-        if(ActivePlayer != Boss)
+
+        if (ActivePlayer != Boss)
             ActivePlayer.SetActive(true);
     }
 
