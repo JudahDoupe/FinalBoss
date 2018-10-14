@@ -6,14 +6,14 @@ public class DrawPile : Pile {
 
     void Click()
     {
-        var card = Deck.Draw();
+        var card = Draw();
         if (card != null)
         {
-            Fight.ActivePlayer.AddCardToHand(card);
+            Deck.Player.Hand.AddCard(card);
         }
         else
         {
-            Debug.Log("No Cards left To draw");
+            Debug.Log("Cannot draw any more cards");
         }
     }
 }

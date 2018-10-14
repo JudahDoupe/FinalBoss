@@ -10,14 +10,13 @@ public class Player : MonoBehaviour
     public Deck AttackDeck;
     public Deck SpecialDeck;
 
-    public Transform Hand;
+    public Hand Hand;
 
-    private List<Card> _hand = new List<Card>();
-
-    public void AddCardToHand(Card card)
+    public void SetActive(bool isActive)
     {
-        _hand.Add(card);
-        card.transform.parent = Hand;
-        card.transform.localPosition = Vector3.zero;
+        Hand?.gameObject.SetActive(isActive);
+        AttackDeck?.gameObject.SetActive(isActive);
+        MovementDeck?.gameObject.SetActive(isActive);
+        SpecialDeck?.gameObject.SetActive(isActive);
     }
 }
