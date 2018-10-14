@@ -12,11 +12,14 @@ public class Board : MonoBehaviour {
     void Start()
     {
         var size = 10;
-        for (int r = -size; r < size; r++)
+        for (int x = -size; x <= size; x++)
         {
-            for (int q = -size; q < size; q++)
+            for (int y = -size; y <= size; y++)
             {
-                AddTile(new TileCoord(r,q));
+                for (int z = -size; z <= size; z++)
+                {
+                    if(x+y+z == 0)AddTile(new TileCoord(x, y,z));
+                }
             }
         }
     }
@@ -65,6 +68,13 @@ public class Board : MonoBehaviour {
                 }
             }
         }
+        return tiles;
+    }
+    public List<Tile> GetNeighbors(TileCoord coord)
+    {
+        var tiles = GetTilesWithinRadius(1, coord);
+        var center = GetTile(coord);
+        if (center != null) tiles.Remove(center);
         return tiles;
     }
 

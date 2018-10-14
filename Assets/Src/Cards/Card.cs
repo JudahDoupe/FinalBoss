@@ -21,7 +21,7 @@ public class Card : MonoBehaviour
     {
     }
 
-    public bool IsPlayable()
+    public virtual bool IsPlayable()
     {
         return Fight.TurnTimer.SecondIndex + SecondsToPlay <= Fight.TurnTimer.Seconds.Count;
     }
