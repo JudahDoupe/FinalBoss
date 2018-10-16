@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -22,6 +23,30 @@ public class Board : MonoBehaviour {
                 }
             }
         }
+    }
+
+    public async Task PlaceToken(Token token)
+    {
+        token.Tile = Fight.ActivePlayer == Fight.Boss ? GetRandomTile() : await SelectTile(GetAllTiles());
+        token.transform.position = token.Tile.transform.position;
+    }
+    public async Task<Tile> SelectTile(List<Tile> tiles)
+    {
+        if (tiles.Count == 0) return null;
+        foreach(var tile in tiles)
+        {
+            tile.IsSelectable = true;
+        }
+
+        await SelectedTile.Task;
+        var rtn = SelectedTile.Task.Result;
+        SelectedTile = new TaskCompletionSource<Tile>();
+
+        foreach(var tile in tiles)
+        {
+            tile.IsSelectable = false;
+        }
+        return rtn;
     }
 
     public void AddTile(TileCoord coord)
@@ -51,6 +76,13 @@ public class Board : MonoBehaviour {
     {
         return Tiles.RandomValue();
     }
+    public List<Tile> GetNeighbors(TileCoord coord)
+    {
+        var tiles = GetTilesWithinRadius(1, coord);
+        var center = GetTile(coord);
+        if (center != null) tiles.Remove(center);
+        return tiles;
+    }
     public List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
     {
         var tiles = new List<Tile>();
@@ -70,32 +102,11 @@ public class Board : MonoBehaviour {
         }
         return tiles;
     }
-    public List<Tile> GetNeighbors(TileCoord coord)
+    public List<Tile> GetAllTiles()
     {
-        var tiles = GetTilesWithinRadius(1, coord);
-        var center = GetTile(coord);
-        if (center != null) tiles.Remove(center);
-        return tiles;
+        return Enumerable.ToList(Tiles.Values);
     }
 
-    public async Task<Tile> SelectTile(List<Tile> tiles)
-    {
-        if (tiles.Count == 0) return null;
-        foreach(var tile in tiles)
-        {
-            tile.IsSelectable = true;
-        }
-
-        await SelectedTile.Task;
-        var rtn = SelectedTile.Task.Result;
-        SelectedTile = new TaskCompletionSource<Tile>();
-
-        foreach(var tile in tiles)
-        {
-            tile.IsSelectable = false;
-        }
-        return rtn;
-    }
 }
 
 public class TileCoordComparer : IEqualityComparer<TileCoord>

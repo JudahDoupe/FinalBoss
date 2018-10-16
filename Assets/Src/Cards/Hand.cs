@@ -28,9 +28,9 @@ public class Hand : MonoBehaviour {
                 return;
             }
 
-            var cardWidth = Cards[i].transform.localScale.x;
+            var cardWidth = Cards[i].transform.localScale.x * 0.75f;
             var offset = i - (NumCards-1) / 2f;
-            Cards[i].transform.localPosition = new Vector3(offset * cardWidth, -0.025f * Mathf.Abs(offset), 0);
+            Cards[i].transform.localPosition = new Vector3(offset * cardWidth, -0.025f * offset * offset, i * -0.001f);
             Cards[i].transform.localEulerAngles = new Vector3(0,0,-10 * offset);
         }
     }

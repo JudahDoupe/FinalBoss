@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
 
     public int Health = 20;
 
-    public void SetActive(bool isActive)
+    public void SetUIActive(bool isActive)
     {
         Hand?.gameObject.SetActive(isActive);
         AttackDeck?.gameObject.SetActive(isActive);
@@ -25,5 +25,14 @@ public class Player : MonoBehaviour
     public void Damage(int amount)
     {
         Health -= amount;
+        if (Health <= 0)
+        {
+            Die();
+        }
+    }
+    private void Die()
+    {
+        Health = 0;
+        Fight.EndGame();
     }
 }

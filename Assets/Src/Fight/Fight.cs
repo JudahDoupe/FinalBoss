@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Fight : MonoBehaviour
@@ -29,30 +30,38 @@ public class Fight : MonoBehaviour
 
     public static async void NextTurn()
     {
-        ActivePlayer?.SetActive(false);
+        ActivePlayer?.SetUIActive(false);
+
         TurnTimer.Clear();
 
+        IncrementActivePlayer();
+
+        if (ActivePlayer.Token.Tile == null) await Board.PlaceToken(ActivePlayer.Token);
+
+        if (ActivePlayer != Boss) ActivePlayer.SetUIActive(true);
+    }
+    public static async void EndGame()
+    {
+        Debug.Log("Game Over");
+        if(Boss.Health == 0)
+        {
+            Debug.Log("You Win!");
+        }
+        else
+        {
+            Debug.Log("You Lose");
+        }
+        Application.Quit();
+    }
+    
+    private static void IncrementActivePlayer()
+    {
         if (ActivePlayer == Boss)
             ActivePlayer = Player1;
         else if (ActivePlayer == Player1)
             ActivePlayer = Player2;
         else
             ActivePlayer = Boss;
-        
-        if(ActivePlayer.Token.Tile == null)
-        {
-            Tile tile;
-            if (ActivePlayer == Boss)
-                tile = Board.GetRandomTile();
-            else
-                tile = await Board.SelectTile(Enumerable.ToList(Board.Tiles.Values).ToList());
-            ActivePlayer.Token.Tile = tile;
-            ActivePlayer.Token.transform.position = tile.transform.position;
-        }
-
-
-        if (ActivePlayer != Boss)
-            ActivePlayer.SetActive(true);
     }
 
 }
