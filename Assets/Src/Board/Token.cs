@@ -23,11 +23,9 @@ public class Token : MonoBehaviour
         else
         {
             _model.SetActive(true);
-            transform.LookAt(Camera.main.transform);
+            transform.rotation = Camera.main.transform.rotation;
 
-            
-
-	        if (Vector3.Distance(transform.position, Tile.transform.position) > Speed * Time.deltaTime)
+            if (Vector3.Distance(transform.position, Tile.transform.position) > Speed * Time.deltaTime)
 	        {
 	            var dir = Vector3.Normalize(Tile.transform.position - transform.position);
 	            transform.Translate(dir * Speed * Time.deltaTime,Space.World);
