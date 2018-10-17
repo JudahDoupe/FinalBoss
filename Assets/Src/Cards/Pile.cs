@@ -19,6 +19,14 @@ public class Pile : MonoBehaviour {
             Insert(card);
         }
     }
+    private void Update()
+    {
+        foreach(var card in Cards)
+        {
+            card.transform.localPosition = Vector3.Lerp(card.transform.localPosition, Vector3.zero, 3 * Time.deltaTime);
+            card.transform.localEulerAngles = Vector3.Lerp(card.transform.localEulerAngles, Vector3.zero, 3 * Time.deltaTime);
+        }
+    }
 
     public Card Draw()
     {
@@ -30,8 +38,6 @@ public class Pile : MonoBehaviour {
     {
         Cards.Enqueue(card);
         card.transform.parent = transform;
-        card.transform.localPosition = Vector3.zero;
-        card.transform.localEulerAngles = Vector3.zero;
     }
     public void Shuffle()
     {

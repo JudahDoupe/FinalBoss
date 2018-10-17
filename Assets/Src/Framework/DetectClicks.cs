@@ -23,10 +23,6 @@ public class DetectClicks : MonoBehaviour
                 Click();
 		    }			
 		}
-	    if (Input.GetMouseButton(0))
-	    {
-            if(_hit != null)Drag();
-	    }
 	    if (Input.GetMouseButtonUp(0))
 	    {
 	        _hit = null;
@@ -41,7 +37,7 @@ public class DetectClicks : MonoBehaviour
     public void Drag()
     {
         var newPos = _camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, _hit.ScreenPoint.z));
-        _hit.Object.SendMessage("Drag", newPos + _hit.PositionObjectOffset, SendMessageOptions.DontRequireReceiver);
+        _hit?.Object?.SendMessage("Drag", newPos + _hit.PositionObjectOffset, SendMessageOptions.DontRequireReceiver);
     }
 
     private class Hit
