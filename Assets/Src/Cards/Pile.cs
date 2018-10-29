@@ -16,6 +16,7 @@ public class Pile : MonoBehaviour {
 
         foreach(var card in GetComponentsInChildren<Card>())
         {
+            card.Player = Deck.Player;
             Insert(card);
         }
     }

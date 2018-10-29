@@ -18,6 +18,7 @@ public class Move3 : Card
         Fight.TurnTimer.AddSecond(SecondType.Movement);
         Fight.TurnTimer.AddSecond(SecondType.Movement);
         Fight.TurnTimer.AddSecond(SecondType.Movement);
+        Player.Initiative += 3;
         Discard();
     }
 

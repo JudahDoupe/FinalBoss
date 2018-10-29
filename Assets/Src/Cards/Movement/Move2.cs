@@ -17,6 +17,7 @@ public class Move2 : Card
         Fight.ActivePlayer.Token.Tile = tile;
         Fight.TurnTimer.AddSecond(SecondType.Movement);
         Fight.TurnTimer.AddSecond(SecondType.Movement);
+        Player.Initiative += 2;
         Discard();
     }
 

@@ -9,59 +9,59 @@ public class Fight : MonoBehaviour
     public static Board Board;
     public static Player ActivePlayer;
     public static TurnTimer TurnTimer;
+    public static List<Player> Players;
+    public static TurnPhase TurnPhase = 0;
 
-    public static Player Player1;
-    public static Player Player2;
-    public static Player Boss;
-
-    public Player _Player1;
-    public Player _Player2;
-    public Player _Boss;
+    private static Queue<Player> _turnOrder = new Queue<Player>();
 
     void Start()
     {
-        Player1 = _Player1;
-        Player2 = _Player2;
-        Boss = _Boss;
+        Players = FindObjectsOfType<Player>().ToList();
         Board = FindObjectOfType<Board>();
         TurnTimer = FindObjectOfType<TurnTimer>();
         NextTurn();
     }
 
-    public static async void NextTurn()
+    public static async void EndPhase()
+    {
+        if(TurnPhase == TurnPhase.Draw)
+        {
+            TurnPhase = TurnPhase.Play;
+        }
+        else if(TurnPhase == TurnPhase.Play)
+        {
+            await NextTurn();
+        }
+    }
+    public static async Task NextTurn()
     {
         ActivePlayer?.SetUIActive(false);
 
-        TurnTimer.Clear();
+        if (!_turnOrder.Any())
+            NextRound();
 
-        IncrementActivePlayer();
+        TurnTimer.Clear();
+        ActivePlayer = _turnOrder.Dequeue();
 
         if (ActivePlayer.Token.Tile == null) await Board.PlaceToken(ActivePlayer.Token);
 
-        if (ActivePlayer != Boss) ActivePlayer.SetUIActive(true);
+        if (!ActivePlayer.IsAI) ActivePlayer.SetUIActive(true);
+        TurnPhase = TurnPhase.Draw;
+    }
+    public static void NextRound()
+    {
+        var players = new List<Player>(Players);
+        players.OrderBy(x => x.Initiative);
+        _turnOrder = new Queue<Player>(players);
     }
     public static async void EndGame()
     {
-        Debug.Log("Game Over");
-        if(Boss.Health == 0)
-        {
-            Debug.Log("You Win!");
-        }
-        else
-        {
-            Debug.Log("You Lose");
-        }
         Application.Quit();
     }
     
-    private static void IncrementActivePlayer()
-    {
-        if (ActivePlayer == Boss)
-            ActivePlayer = Player1;
-        else if (ActivePlayer == Player1)
-            ActivePlayer = Player2;
-        else
-            ActivePlayer = Boss;
-    }
-
+}
+public enum TurnPhase
+{
+    Draw,
+    Play
 }

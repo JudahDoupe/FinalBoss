@@ -6,6 +6,7 @@ using UnityEngine;
 public class Card : MonoBehaviour
 {
     public int SecondsToPlay = 0;
+    public Player Player;
 
     public void Click()
     {

@@ -27,7 +27,7 @@ public class Board : MonoBehaviour {
 
     public async Task PlaceToken(Token token)
     {
-        token.Tile = Fight.ActivePlayer == Fight.Boss ? GetRandomTile() : await SelectTile(GetAllTiles());
+        token.Tile = Fight.ActivePlayer.IsAI ? GetRandomTile() : await SelectTile(GetAllTiles());
         token.transform.position = token.Tile.transform.position;
     }
     public async Task<Tile> SelectTile(List<Tile> tiles)

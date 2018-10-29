@@ -12,7 +12,10 @@ public class Player : MonoBehaviour
 
     public Hand Hand;
 
+    public bool IsAI = false;
+
     public int Health = 20;
+    public int Initiative = 0;
 
     public void SetUIActive(bool isActive)
     {

@@ -1,13 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Attack1 : Card {
 
     public override async void Play()
     {
-        Fight.Boss.Damage(1);
+        var options = Fight.Board.GetNeighbors(Player.Token.Tile.Coord);
+        var tile = await Fight.Board.SelectTile(options);
+
+        var damagee = Fight.Players.SingleOrDefault(x => x.Token.Tile == tile);
+        if (damagee != null) damagee.Damage(1);
+
         Fight.TurnTimer.AddSecond(SecondType.Attack);
+        Player.Initiative += 2;
         Discard();
     }
 
@@ -16,8 +23,4 @@ public class Attack1 : Card {
         Fight.ActivePlayer.AttackDeck.DiscardPile.Insert(this);
     }
 
-    public override bool IsPlayable()
-    {
-        return base.IsPlayable() && Fight.Board.GetNeighbors(Fight.ActivePlayer.Token.Tile.Coord).Contains(Fight.Boss.Token.Tile);
-    }
 }

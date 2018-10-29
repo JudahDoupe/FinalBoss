@@ -17,6 +17,8 @@ public class SpecialBomb : Card {
         for (int i = 0; i < SecondsToPlay; i++)
             Fight.TurnTimer.AddSecond(SecondType.Special);
 
+        Player.Initiative += 1;
+
         Discard();
     }
 
