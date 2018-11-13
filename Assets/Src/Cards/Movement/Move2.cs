@@ -10,19 +10,19 @@ public class Move2 : Card
 
     public override async void Play()
     {
-        var options = Fight.Board.GetTilesWithinRadius(2, Fight.ActivePlayer.Token.Tile.Coord);
-        options.Remove(Fight.ActivePlayer.Token.Tile);
-        var tile = await Fight.Board.SelectTile(options);
+        var options = Board.GetTilesWithinRadius(2, Player.Token.Coord);
+        options.Remove(Board.GetTile(Player.Token.Coord));
+        var tile = await Board.SelectTile(options);
         if (tile == null) return;
-        Fight.ActivePlayer.Token.Tile = tile;
-        Fight.TurnTimer.AddSecond(SecondType.Movement);
-        Fight.TurnTimer.AddSecond(SecondType.Movement);
+        Player.Token.Coord = tile.Coord;
+        Player.TurnTimer.AddSecond(SecondType.Movement);
+        Player.TurnTimer.AddSecond(SecondType.Movement);
         Player.Initiative += 2;
         Discard();
     }
 
     public override async void Discard()
     {
-        Fight.ActivePlayer.MovementDeck.DiscardPile.Insert(this);
+        Player.MovementDeck.DiscardPile.Insert(this);
     }
 }

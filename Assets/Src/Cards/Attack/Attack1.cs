@@ -7,20 +7,20 @@ public class Attack1 : Card {
 
     public override async void Play()
     {
-        var options = Fight.Board.GetNeighbors(Player.Token.Tile.Coord);
-        var tile = await Fight.Board.SelectTile(options);
+        var options = Board.GetNeighbors(Player.Token.Coord);
+        var tile = await Board.SelectTile(options);
 
-        var damagee = Fight.Players.SingleOrDefault(x => x.Token.Tile == tile);
+        var damagee = Fight.Players.SingleOrDefault(x => x.Token.Coord == tile.Coord);
         if (damagee != null) damagee.Damage(1);
 
-        Fight.TurnTimer.AddSecond(SecondType.Attack);
+        Player.TurnTimer.AddSecond(SecondType.Attack);
         Player.Initiative += 2;
         Discard();
     }
 
     public override async void Discard()
     {
-        Fight.ActivePlayer.AttackDeck.DiscardPile.Insert(this);
+        Player.AttackDeck.DiscardPile.Insert(this);
     }
 
 }

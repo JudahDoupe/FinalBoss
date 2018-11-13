@@ -1,17 +1,25 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
+using Random = UnityEngine.Random;
 
-public class Board : MonoBehaviour {
+public class Board : NetworkBehaviour
+{
+    public List<GameObject> tilePrefabs;
 
-    public TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
-    public Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
-    public List<GameObject> TilePrefabs;
+    public static Board Instance;
+    public static TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
+    public static Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
+    public static List<GameObject> TilePrefabs;
 
     void Start()
     {
+        TilePrefabs = tilePrefabs;
+        Instance = this;
         var size = 10;
         for (int x = -size; x <= size; x++)
         {
@@ -25,17 +33,13 @@ public class Board : MonoBehaviour {
         }
     }
 
-    public async Task PlaceToken(Token token)
+    public static async Task<Tile> SelectTile(List<Tile> tiles)
     {
-        token.Tile = Fight.ActivePlayer.IsAI ? GetRandomTile() : await SelectTile(GetAllTiles());
-        token.transform.position = token.Tile.transform.position;
-    }
-    public async Task<Tile> SelectTile(List<Tile> tiles)
-    {
+        Debug.Log("Selecting Position");
         if (tiles.Count == 0) return null;
         foreach(var tile in tiles)
         {
-            tile.IsSelectable = true;
+            tile.RpcSetSelectable(true);
         }
 
         await SelectedTile.Task;
@@ -44,46 +48,44 @@ public class Board : MonoBehaviour {
 
         foreach(var tile in tiles)
         {
-            tile.IsSelectable = false;
+            tile.RpcSetSelectable(false);
         }
         return rtn;
     }
 
-    public void AddTile(TileCoord coord)
+    public static void AddTile(TileCoord coord)
     {
-        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)],transform).GetComponent<Tile>();
+        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)],Instance.transform).GetComponent<Tile>();
+        NetworkServer.Spawn(tile.gameObject);
 
-        var axis = new Vector3(0.5f, 0, 0.866f).normalized;
-        tile.transform.position = axis * coord.R + Vector3.right * coord.Q + Vector3.up * Random.Range(-0.03f, 0.03f);
-
-        tile.Coord = coord;
+        tile.SetCoord(coord);
         tile.IsBuilt = true;
         Tiles[coord] = tile;
     }
-    public void RemoveTile(TileCoord coord)
+    public static void RemoveTile(TileCoord coord)
     {
         var tile = GetTile(coord);
         if(tile != null) Destroy(tile.gameObject);
     }
-    public Tile GetTile(TileCoord coord)
+    public static Tile GetTile(TileCoord coord)
     {
         if (coord == null) return null;
         Tile tile;
         Tiles.TryGetValue(coord, out tile);
         return tile;
     }
-    public Tile GetRandomTile()
+    public static Tile GetRandomTile()
     {
         return Tiles.RandomValue();
     }
-    public List<Tile> GetNeighbors(TileCoord coord)
+    public static List<Tile> GetNeighbors(TileCoord coord)
     {
         var tiles = GetTilesWithinRadius(1, coord);
         var center = GetTile(coord);
         if (center != null) tiles.Remove(center);
         return tiles;
     }
-    public List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
+    public static List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
     {
         var tiles = new List<Tile>();
         for (int x = -radius; x <= radius; x++)
@@ -102,7 +104,7 @@ public class Board : MonoBehaviour {
         }
         return tiles;
     }
-    public List<Tile> GetAllTiles()
+    public static List<Tile> GetAllTiles()
     {
         return Enumerable.ToList(Tiles.Values);
     }

@@ -8,7 +8,7 @@ public class DetectClicks : MonoBehaviour
 
     void Start()
 	{
-	    _camera = Camera.main;
+	    _camera = gameObject.GetComponent<Camera>();
 	}
 	
 	void Update ()
@@ -19,7 +19,7 @@ public class DetectClicks : MonoBehaviour
             var ray = _camera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit, 100))
 		    {
-                _hit = new Hit(hit);
+                _hit = new Hit(hit, _camera);
                 Click();
 		    }			
 		}
@@ -47,12 +47,12 @@ public class DetectClicks : MonoBehaviour
         public readonly Vector3 PositionObjectOffset;
         public readonly Vector3 ScreenPoint;
 
-        public Hit(RaycastHit hit)
+        public Hit(RaycastHit hit, Camera camera)
         {
             Object = hit.transform.gameObject;
             Position = hit.point;
             PositionObjectOffset = Object.transform.position - Position;
-            ScreenPoint = Camera.main.WorldToScreenPoint(Position);
+            ScreenPoint = camera.WorldToScreenPoint(Position);
         }
     }
 }

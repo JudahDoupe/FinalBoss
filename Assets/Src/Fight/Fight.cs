@@ -3,52 +3,51 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class Fight : MonoBehaviour
 {
-    public static Board Board;
     public static Player ActivePlayer;
-    public static TurnTimer TurnTimer;
-    public static List<Player> Players;
+    public static List<Player> Players = new List<Player>();
     public static TurnPhase TurnPhase = 0;
 
     private static Queue<Player> _turnOrder = new Queue<Player>();
 
-    void Start()
+
+    public static void Join(Player player)
     {
-        Players = FindObjectsOfType<Player>().ToList();
-        Board = FindObjectOfType<Board>();
-        TurnTimer = FindObjectOfType<TurnTimer>();
-        NextTurn();
+        Players.Add(player);
+        if (Players.Count == 1) StartGame();
     }
 
+    public static void StartGame()
+    {
+        Debug.Log("Starting Game");
+        EndTurn();
+    }
     public static async void EndPhase()
     {
-        if(TurnPhase == TurnPhase.Draw)
+        switch (TurnPhase)
         {
-            TurnPhase = TurnPhase.Play;
-        }
-        else if(TurnPhase == TurnPhase.Play)
-        {
-            await NextTurn();
+            case TurnPhase.Draw:
+                TurnPhase = TurnPhase.Play;
+                break;
+            case TurnPhase.Play:
+                await EndTurn();
+                break;
         }
     }
-    public static async Task NextTurn()
+    public static async Task EndTurn()
     {
-        ActivePlayer?.SetUIActive(false);
+        if (!_turnOrder.Any()) { EndRound();}
 
-        if (!_turnOrder.Any())
-            NextRound();
-
-        TurnTimer.Clear();
+        Players.ForEach(p => p.RpcEndTurn());
         ActivePlayer = _turnOrder.Dequeue();
+        ActivePlayer.RpcStartTurn();
 
-        if (ActivePlayer.Token.Tile == null) await Board.PlaceToken(ActivePlayer.Token);
-
-        if (!ActivePlayer.IsAI) ActivePlayer.SetUIActive(true);
         TurnPhase = TurnPhase.Draw;
     }
-    public static void NextRound()
+    public static async void EndRound()
     {
         var players = new List<Player>(Players);
         players.OrderBy(x => x.Initiative);

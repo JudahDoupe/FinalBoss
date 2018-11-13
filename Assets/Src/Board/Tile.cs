@@ -2,22 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
+using Random = System.Random;
 
-public class Tile : MonoBehaviour
+public class Tile : NetworkBehaviour
 {
     public static float Size = 1;
-
     public TileCoord Coord;
-    public bool IsSelectable;
+    [SyncVar]
     public bool IsBuilt;
+    public bool IsSelectable;
 
-    private Board _board;
     private GameObject _model;
     private GameObject _selector;
 
     void Start()
     {
-        _board = transform.parent.GetComponent<Board>();
         _model = transform.Find("Model").gameObject;
         _selector = transform.Find("Selector").gameObject;
     }
@@ -27,30 +27,60 @@ public class Tile : MonoBehaviour
         _model.SetActive(IsBuilt);
     }
 
+    public void SetCoord(TileCoord coord)
+    { 
+        Coord = coord;
+        transform.position = Coord.Position;
+    }
+    
+    /* MESSAGES TO SERVER */
+
+    [Command]
+    public void CmdSelectTile()
+    {
+        Board.SelectedTile.SetResult(this);
+    }
+
+    /* MESSAGES FROM SERVER */
+
+    [ClientRpc]
+    public void RpcSetSelectable(bool isSelectable)
+    {
+        IsSelectable = isSelectable;
+    }
+
 }
 
 [Serializable]
 public class TileCoord
 {
     //Cubic Coordinates
-    public int X { get { return Q; } }
-    public int Y { get { return - Q - R; } }
-    public int Z { get { return R; } }
+    public int X => Q;
+    public int Y => - Q - R;
+    public int Z => R;
 
     //Axial Coordinates
-    public int R;
-    public int Q;
+    public int R { get; }
+    public int Q { get; }
+
+    //World Coordinates
+    private float VerticalOffset { get; }
+    private Vector3 Axis => new Vector3(0.5f, 0, 0.866f).normalized;
+    public Vector3 Position => Axis * R + Vector3.right * Q + Vector3.up * VerticalOffset;
 
     public TileCoord(int x, int y, int z)
     {
         Q = x;
         R = z;
+        var r = new Random();
+        VerticalOffset = r.Next(-300, 300) * 0.0001f;
     }
     public TileCoord(int r, int q)
     {
         R = r;
         Q = q;
+        var random = new Random();
+        VerticalOffset = random.Next(-300, 300) * 0.0001f;
     }
-
 
 }

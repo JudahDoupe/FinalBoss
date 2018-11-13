@@ -46,7 +46,7 @@ public class TurnTimer : MonoBehaviour {
         SecondIndex++;
 
         if (SecondIndex >= 5)
-            Fight.NextTurn();
+            Fight.EndTurn();
     }
 
 }

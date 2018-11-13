@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Token : MonoBehaviour
+public class Token : NetworkBehaviour
 {
-    [HideInInspector]
-    public Tile Tile;
+    [CanBeNull] [HideInInspector]
+    public TileCoord Coord;
     public float Speed = 1;
 
     private GameObject _model;
@@ -16,7 +18,7 @@ public class Token : MonoBehaviour
     }
 
     void Update () {
-        if(Tile == null)
+        if(Coord == null)
         {
             _model.SetActive(false);
         }
@@ -25,11 +27,17 @@ public class Token : MonoBehaviour
             _model.SetActive(true);
             transform.rotation = Camera.main.transform.rotation;
 
-            if (Vector3.Distance(transform.position, Tile.transform.position) > Speed * Time.deltaTime)
+            if (Vector3.Distance(transform.position, Coord.Position) > Speed * Time.deltaTime)
 	        {
-	            var dir = Vector3.Normalize(Tile.transform.position - transform.position);
-	            transform.Translate(dir * Speed * Time.deltaTime,Space.World);
-	        }
+	            var dir = Vector3.Normalize(Coord.Position - transform.position);
+	            transform.Translate(dir * Speed * Time.deltaTime,Space.World); 
+	        } 
         }
 	}
+
+    public void SetCoord(TileCoord coord)
+    {
+        Coord = coord;
+        transform.position = Coord.Position;
+    }
 }

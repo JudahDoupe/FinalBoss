@@ -13,6 +13,6 @@ public class TileSelector : MonoBehaviour {
 
 	public void Click()
     {
-        Fight.Board.SelectedTile.SetResult(_tile);
+        _tile.CmdSelectTile();
     }
 }

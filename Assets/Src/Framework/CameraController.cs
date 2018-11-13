@@ -8,7 +8,7 @@ public class CameraController : MonoBehaviour {
 
     void LateUpdate()
     {
-        if(Fight.ActivePlayer?.Token.Tile != null)
+        if(Fight.ActivePlayer?.Token.Coord != null)
             transform.position = Vector3.Lerp(transform.position, Fight.ActivePlayer.Token.transform.position + Offset, Time.deltaTime);
     }
 }
