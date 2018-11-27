@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class SpecialBomb : Card {
 
-    public override async void Play()
+    [Command]
+    public override async void CmdPlay()
     {
         var options = Board.GetTilesWithinRadius(3, Player.Token.Coord);
         Board.GetTilesWithinRadius(1, Player.Token.Coord).ForEach( x => options.Remove(x) );
@@ -15,15 +17,10 @@ public class SpecialBomb : Card {
         tilesToRemove.ForEach(t => Board.RemoveTile(t.Coord));  
 
         for (int i = 0; i < SecondsToPlay; i++)
-            Player.TurnTimer.AddSecond(SecondType.Special);
+            Fight.UseSecond(SecondType.Special);
         
         Player.Initiative += 1;
 
-        Discard(); 
-    }
-
-    public override void Discard()
-    {
-        Player.SpecialDeck.DiscardPile.Insert(this);
+        IsBeingPlayed = false;
     }
 }

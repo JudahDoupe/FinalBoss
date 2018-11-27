@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class TurnTimer : MonoBehaviour {
+public class TurnTimer : NetworkBehaviour {
 
     public Material DefaultMaterial;
     public Material MovementMaterial;
@@ -13,7 +14,8 @@ public class TurnTimer : MonoBehaviour {
     public List<Renderer> Seconds;
     public int SecondIndex = 0;
 
-    public void Clear()
+    [ClientRpc]
+    public void RpcClear()
     {
         foreach (var second in Seconds)
         {
@@ -21,7 +23,8 @@ public class TurnTimer : MonoBehaviour {
         }
         SecondIndex = 0;
     }
-    public void AddSecond(SecondType type, int damage = 0)
+    [ClientRpc]
+    public void RpcAddSecond(SecondType type)
     {
         Material mat;
         switch (type)
@@ -40,7 +43,7 @@ public class TurnTimer : MonoBehaviour {
                 break;
             default:
                 mat = DefaultMaterial;
-                break;
+                break; 
         }
         Seconds[SecondIndex].material = mat;
         SecondIndex++;

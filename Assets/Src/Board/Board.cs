@@ -10,8 +10,8 @@ using Random = UnityEngine.Random;
 public class Board : NetworkBehaviour
 {
     public List<GameObject> tilePrefabs;
+    private static Board _instance;
 
-    public static Board Instance;
     public static TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
     public static Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
     public static List<GameObject> TilePrefabs;
@@ -19,7 +19,7 @@ public class Board : NetworkBehaviour
     void Start()
     {
         TilePrefabs = tilePrefabs;
-        Instance = this;
+        _instance = this;
         var size = 10;
         for (int x = -size; x <= size; x++)
         {
@@ -55,7 +55,7 @@ public class Board : NetworkBehaviour
 
     public static void AddTile(TileCoord coord)
     {
-        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)],Instance.transform).GetComponent<Tile>();
+        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)],_instance.transform).GetComponent<Tile>();
         NetworkServer.Spawn(tile.gameObject);
 
         tile.SetCoord(coord);

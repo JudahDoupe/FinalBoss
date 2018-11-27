@@ -1,50 +1,67 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
+    public Dictionary<CardType, Deck> Decks = new Dictionary<CardType, Deck>();
+    public Hand Hand { get; private set; }
+    public TurnTimer TurnTimer { get; private set; }
+    public Camera Camera { get; private set; }
     public Token Token;
 
-    public Deck MovementDeck;
-    public Deck AttackDeck;
-    public Deck SpecialDeck;
-    public TurnTimer TurnTimer;
-
-    public Hand Hand;
-
-    public bool IsAI = false;
+    [SyncVar]
     public int Health = 20;
+    [SyncVar]
     public int Initiative = 0;
+    [SyncVar]
+    public bool IsPlayingCard = false;
 
-    public void Start()
+    private void Start()
     {
+        foreach (var deck in gameObject.GetComponentsInChildren<Deck>())
+        {
+            Decks.Add(deck.Type,deck);
+        }
+        Hand = gameObject.GetComponentInChildren<Hand>();
+        Hand.Player = this;
+        TurnTimer = gameObject.GetComponentInChildren<TurnTimer>();
+        Camera = gameObject.GetComponentInChildren<Camera>();
+
+        SetUiActive(false);
+        SetDecksActive(false);
         CmdJoinGame();
     }
+    private IEnumerator SetupTurn()
+    {
+        //Setup
+        if (Token.Coord == null)
+        {
+            CmdPlaceToken();
+            yield return new WaitUntil(() => Token.Coord != null);
+        }
+        SetUiActive(true);
 
-    public void SetUiActive(bool isActive)
+        //Draw Cards
+        SetDecksActive(true);
+        yield return new WaitUntil(() => Hand.NumCards >= 6);
+        SetDecksActive(false);
+    }
+    private void SetUiActive(bool isActive)
     {
         Hand?.gameObject.SetActive(isActive);
-        AttackDeck?.gameObject.SetActive(isActive);
-        MovementDeck?.gameObject.SetActive(isActive);
-        SpecialDeck?.gameObject.SetActive(isActive);
         TurnTimer?.gameObject.SetActive(isActive);
     }
-
-    public void Damage(int amount)
+    private void SetDecksActive(bool isActive)
     {
-        Health -= amount;
-        if (Health <= 0)
+        foreach (var deck in Decks.Values)
         {
-            Die();
+            deck.gameObject.SetActive(isActive);
         }
-    }
-    private void Die()
-    {
-        Health = 0;
-        CmdEndGame();
     }
 
     /* MESSAGES TO SERVER */
@@ -65,10 +82,9 @@ public class Player : NetworkBehaviour
     [Command]
     private async void CmdPlaceToken()
     {
-        SetUiActive(false);
         var tile = await Board.SelectTile(Board.GetAllTiles());
         Token.SetCoord(tile.Coord);
-        SetUiActive(true);
+        Token.Player = this;
     }
 
     /* MESSAGES FROM SERVER */
@@ -76,12 +92,23 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     public void RpcStartTurn()
     {
-        SetUiActive(true);
-        if (Token.Coord == null) CmdPlaceToken();
+        StartCoroutine(SetupTurn());
     } 
     [ClientRpc]
     public void RpcEndTurn()
     {
         SetUiActive(false);
+        TurnTimer.RpcClear();
     }
+    [ClientRpc]
+    public void RpcDamage(int amount)
+    {
+        Health -= amount;
+        if (Health <= 0)
+        {
+            Health = 0;
+            CmdEndGame();
+        }
+    }
+
 }

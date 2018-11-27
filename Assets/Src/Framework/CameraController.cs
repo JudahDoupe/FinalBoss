@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour {
 
-    private Vector3 Offset = new Vector3(0, 2, -2);
+    public Vector3 Offset = new Vector3(0, 2, -2);
 
     void LateUpdate()
     {
