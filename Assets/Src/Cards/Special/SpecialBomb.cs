@@ -17,7 +17,7 @@ public class SpecialBomb : Card {
         tilesToRemove.ForEach(t => Board.RemoveTile(t.Coord));  
 
         for (int i = 0; i < SecondsToPlay; i++)
-            Fight.UseSecond(SecondType.Special);
+            Fight.UseAction(ActionType.Special);
         
         Player.Initiative += 1;
 

@@ -35,7 +35,6 @@ public class Board : NetworkBehaviour
 
     public static async Task<Tile> SelectTile(List<Tile> tiles)
     {
-        Debug.Log("Selecting Position");
         if (tiles.Count == 0) return null;
         foreach(var tile in tiles)
         {

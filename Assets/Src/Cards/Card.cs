@@ -10,7 +10,7 @@ public abstract class Card : NetworkBehaviour
 
     public int SecondsToPlay = 0;
     public Player Player;
-    public CardType Type;
+    public ActionType Type;
 
     public void Click()
     {
@@ -28,7 +28,7 @@ public abstract class Card : NetworkBehaviour
     public virtual bool IsPlayable()
     {
         return !Player.IsPlayingCard &&
-               Player.TurnTimer.SecondIndex + SecondsToPlay <= Player.TurnTimer.Seconds.Count;
+               Fight.ActionNumber + SecondsToPlay <= Fight.TurnActions.Length;
     }
 
     private IEnumerator Play()
@@ -39,11 +39,4 @@ public abstract class Card : NetworkBehaviour
         Discard();
         Player.IsPlayingCard = false;
     }
-}
-
-public enum CardType
-{
-    Movement,
-    Attack,
-    Special
 }

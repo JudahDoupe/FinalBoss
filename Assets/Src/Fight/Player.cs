@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
-    public Dictionary<CardType, Deck> Decks = new Dictionary<CardType, Deck>();
+    public Dictionary<ActionType, Deck> Decks = new Dictionary<ActionType, Deck>();
     public Hand Hand { get; private set; }
     public TurnTimer TurnTimer { get; private set; }
     public Camera Camera { get; private set; }
@@ -69,7 +69,7 @@ public class Player : NetworkBehaviour
     [Command]
     private void CmdJoinGame()
     {
-        Fight.Join(this);
+        Fight.JoinFight(this);
         Token = Instantiate(Token);
         NetworkServer.Spawn(Token.gameObject);
         Token.Coord = null;
@@ -77,7 +77,7 @@ public class Player : NetworkBehaviour
     [Command]
     private void CmdEndGame()
     {
-        Fight.EndGame();
+        Fight.EndFight();
     }
     [Command]
     private async void CmdPlaceToken()
@@ -98,7 +98,6 @@ public class Player : NetworkBehaviour
     public void RpcEndTurn()
     {
         SetUiActive(false);
-        TurnTimer.RpcClear();
     }
     [ClientRpc]
     public void RpcDamage(int amount)
@@ -110,5 +109,4 @@ public class Player : NetworkBehaviour
             CmdEndGame();
         }
     }
-
 }

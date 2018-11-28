@@ -7,12 +7,6 @@ public class EndTurnButton : NetworkBehaviour {
 
 	public void Click()
     {
-        CmdEndTurn();
-    }
-
-    [Command]
-    public void CmdEndTurn()
-    {
         Fight.EndTurn();
     }
 }

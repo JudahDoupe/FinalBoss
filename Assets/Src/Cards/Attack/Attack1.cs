@@ -15,7 +15,7 @@ public class Attack1 : Card
         var damagee = Fight.Players.SingleOrDefault(x => x.Token.Coord == tile.Coord);
         if (damagee != null) damagee.RpcDamage(1);
          
-        Fight.UseSecond(SecondType.Attack);
+        Fight.UseAction(ActionType.Attack);
         Player.Initiative += 2;
 
         IsBeingPlayed = false; 

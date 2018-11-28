@@ -11,14 +11,12 @@ public class Move1 : Card {
     [Command]
     public override async void CmdPlay()
     {
-
-        Debug.Log("Move1");
         var options = Board.GetTilesWithinRadius(1, Player.Token.Coord);
         options.Remove(Board.GetTile(Player.Token.Coord));
         var tile = await Board.SelectTile(options);
         if (tile == null) return;
         Player.Token.Coord = tile.Coord;
-        Fight.UseSecond(SecondType.Movement);
+        Fight.UseAction(ActionType.Movement);
         Player.Initiative += 1;
 
         IsBeingPlayed = false;

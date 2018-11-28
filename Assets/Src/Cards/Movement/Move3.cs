@@ -16,9 +16,9 @@ public class Move3 : Card
         var tile = await Board.SelectTile(options);
         if (tile == null) return;
         Player.Token.Coord = tile.Coord;
-        Fight.UseSecond(SecondType.Movement);
-        Fight.UseSecond(SecondType.Movement);
-        Fight.UseSecond(SecondType.Movement);
+        Fight.UseAction(ActionType.Movement);
+        Fight.UseAction(ActionType.Movement);
+        Fight.UseAction(ActionType.Movement);
         Player.Initiative += 2;
 
         IsBeingPlayed = false;

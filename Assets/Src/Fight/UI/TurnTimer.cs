@@ -5,58 +5,38 @@ using UnityEngine.Networking;
 
 public class TurnTimer : NetworkBehaviour {
 
-    public Material DefaultMaterial;
     public Material MovementMaterial;
     public Material AttackMaterial;
     public Material SpecialMaterial;
-    public Material SkipMaterial;
+    public Material NeutralMaterial;
 
     public List<Renderer> Seconds;
-    public int SecondIndex = 0;
 
-    [ClientRpc]
-    public void RpcClear()
+    public void Update()
     {
-        foreach (var second in Seconds)
+        for (var i = 0; i < Fight.TurnActions.Length; i++)
         {
-            second.material = DefaultMaterial;
+            Material mat;
+            switch (Fight.TurnActions[i])
+            {
+                case ActionType.Movement:
+                    mat = MovementMaterial;
+                    break;
+                case ActionType.Attack:
+                    mat = AttackMaterial;
+                    break;
+                case ActionType.Special:
+                    mat = SpecialMaterial;
+                    break;
+                case ActionType.Neutral:
+                    mat = NeutralMaterial;
+                    break;
+                default:
+                    mat = NeutralMaterial;
+                    break; 
+            }
+            Seconds[i].material = mat;
         }
-        SecondIndex = 0;
-    }
-    [ClientRpc]
-    public void RpcAddSecond(SecondType type)
-    {
-        Material mat;
-        switch (type)
-        {
-            case SecondType.Movement:
-                mat = MovementMaterial;
-                break;
-            case SecondType.Attack:
-                mat = AttackMaterial;
-                break;
-            case SecondType.Special:
-                mat = SpecialMaterial;
-                break;
-            case SecondType.Skip:
-                mat = SkipMaterial;
-                break;
-            default:
-                mat = DefaultMaterial;
-                break; 
-        }
-        Seconds[SecondIndex].material = mat;
-        SecondIndex++;
-
-        if (SecondIndex >= 5)
-            Fight.EndTurn();
     }
 
-}
-public enum SecondType
-{
-    Movement,
-    Attack,
-    Special,
-    Skip
 }

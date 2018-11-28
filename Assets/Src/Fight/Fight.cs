@@ -7,27 +7,29 @@ using UnityEngine.Networking;
 
 public class Fight : MonoBehaviour
 {
+    //Fight
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
 
     private static Queue<Player> _turnOrder = new Queue<Player>();
 
-    public static void Join(Player player)
+    public static void JoinFight(Player player)
     {
         Players.Add(player);
-        if (Players.Count == 1) StartGame();
+        if (Players.Count == 1) StartFight();
     }
-
-    public static void StartGame()
+    public static void StartFight()
     {
-        Debug.Log("Starting Game");
         EndTurn();
     }
     public static void EndTurn()
     {
         if (!_turnOrder.Any()) { EndRound();}
-
         Players.ForEach(p => p.RpcEndTurn());
+
+        TurnActions = new[] {ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral};
+        ActionNumber = 0;
+
         ActivePlayer = _turnOrder.Dequeue();
         ActivePlayer.RpcStartTurn();
     }
@@ -37,16 +39,25 @@ public class Fight : MonoBehaviour
         players.OrderBy(x => x.Initiative);
         _turnOrder = new Queue<Player>(players);
     }
-    public static void EndGame()
+    public static void EndFight()
     {
         Application.Quit();
     }
 
-    public static void UseSecond(SecondType type)
+    //Action Counter
+    public static ActionType[] TurnActions { get; private set; }
+    public static int ActionNumber { get; private set; }
+
+    public static void UseAction(ActionType type)
     {
-        foreach (var player in Players)
-        {
-            player.TurnTimer.RpcAddSecond(type);
-        }
+        TurnActions[ActionNumber] = type;
+        ActionNumber++;
     }
+}
+public enum ActionType
+{
+    Movement,
+    Attack,
+    Special,
+    Neutral
 }

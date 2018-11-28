@@ -1,7 +1,9 @@
 using UnityEngine;
 
 public class DetectClicks : MonoBehaviour
-{	
+{
+    public bool debug = false;
+
 	private Camera _camera;
     private Hit _hit;
 
@@ -32,6 +34,7 @@ public class DetectClicks : MonoBehaviour
     public void Click()
     {
         _hit.Object.SendMessage("Click", _hit.Position, SendMessageOptions.DontRequireReceiver);
+        if(debug)Debug.Log(_hit.Object.name);
     }
 
     public void Drag()

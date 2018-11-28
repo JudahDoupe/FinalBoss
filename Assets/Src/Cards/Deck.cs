@@ -10,7 +10,7 @@ public class Deck : MonoBehaviour
     private readonly Queue<Card> _discardedCards = new Queue<Card>();
     private Player _player;
 
-    public CardType Type;
+    public ActionType Type;
 
     private void Start()
     {
@@ -33,12 +33,16 @@ public class Deck : MonoBehaviour
 
     public Card Draw()
     {
+        if (!_cards.Any())
+            Shuffle();
         return _cards.Count > 0 ? _cards.Dequeue() : null;
     }
     public void Discard(Card card)
     {
         _discardedCards.Enqueue(card);
         card.transform.parent = transform;
+        card.transform.localPosition = Vector3.zero;
+        card.transform.localEulerAngles = Vector3.zero;
     }
     public void Shuffle()
     {
