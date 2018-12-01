@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Deck : MonoBehaviour
+public class Deck : UIObject
 {
     private readonly Queue<Card> _cards = new Queue<Card>();
     private readonly Queue<Card> _discardedCards = new Queue<Card>();
@@ -40,9 +40,8 @@ public class Deck : MonoBehaviour
     public void Discard(Card card)
     {
         _discardedCards.Enqueue(card);
-        card.transform.parent = transform;
-        card.transform.localPosition = Vector3.zero;
-        card.transform.localEulerAngles = Vector3.zero;
+        card.SetParent(transform);
+        card.SnapTo(Vector3.zero, Vector3.zero);
     }
     public void Shuffle()
     {

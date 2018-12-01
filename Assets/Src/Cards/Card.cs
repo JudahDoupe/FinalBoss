@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public abstract class Card : NetworkBehaviour
+public abstract class Card : UIObject
 {
-    protected bool IsBeingPlayed;
+    public bool IsBeingPlayed;
 
     public int SecondsToPlay = 0;
     public Player Player;

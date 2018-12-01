@@ -8,15 +8,15 @@ using UnityEngine.Networking;
 public class Fight : MonoBehaviour
 {
     //Fight
+    public static int MaxPlayers = 1;
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
-
     private static Queue<Player> _turnOrder = new Queue<Player>();
 
     public static void JoinFight(Player player)
     {
         Players.Add(player);
-        if (Players.Count == 1) StartFight();
+        if (Players.Count == MaxPlayers) StartFight();
     }
     public static void StartFight()
     {
