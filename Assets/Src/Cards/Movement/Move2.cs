@@ -13,7 +13,7 @@ public class Move2 : Card
     {
         var options = Board.GetTilesWithinRadius(2, Player.Token.Coord);
         options.Remove(Board.GetTile(Player.Token.Coord));
-        var tile = await Board.SelectTile(options);
+        var tile = await Board.SelectTile(Player.connectionToClient, options);
         if (tile == null) return;
         Player.Token.Coord = tile.Coord;
         Fight.UseAction(ActionType.Movement);

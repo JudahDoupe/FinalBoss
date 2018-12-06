@@ -10,7 +10,7 @@ public class Attack1 : Card
     public override async void CmdPlay()
     {
         var options = Board.GetNeighbors(Player.Token.Coord);
-        var tile = await Board.SelectTile(options);
+        var tile = await Board.SelectTile(Player.connectionToClient, options);
 
         var damagee = Fight.Players.SingleOrDefault(x => x.Token.Coord == tile.Coord);
         if (damagee != null) damagee.RpcDamage(1);

@@ -35,6 +35,11 @@ public class Player : NetworkBehaviour
         SetUiActive(false);
         SetDecksActive(false);
         CmdJoinGame();
+
+        if (!GetComponent<NetworkIdentity>().isLocalPlayer)
+        {
+            Camera.gameObject.SetActive(false);
+        }
     }
     private IEnumerator SetupTurn()
     {
@@ -69,10 +74,12 @@ public class Player : NetworkBehaviour
     [Command]
     private void CmdJoinGame()
     {
-        Fight.JoinFight(this);
         Token = Instantiate(Token);
         NetworkServer.Spawn(Token.gameObject);
         Token.Coord = null;
+        Token.Player = this;
+        CmdPlaceToken();
+        Fight.JoinFight(this);
     }
     [Command]
     private void CmdEndGame()
@@ -82,9 +89,8 @@ public class Player : NetworkBehaviour
     [Command]
     private async void CmdPlaceToken()
     {
-        var tile = await Board.SelectTile(Board.GetAllTiles());
+        var tile = await Board.SelectTile(connectionToClient, Board.GetAllTiles());
         Token.SetCoord(tile.Coord);
-        Token.Player = this;
     }
 
     /* MESSAGES FROM SERVER */

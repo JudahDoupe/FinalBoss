@@ -11,7 +11,7 @@ public class SpecialBomb : Card {
         var options = Board.GetTilesWithinRadius(3, Player.Token.Coord);
         Board.GetTilesWithinRadius(1, Player.Token.Coord).ForEach( x => options.Remove(x) );
 
-        var tile = await Board.SelectTile(options);
+        var tile = await Board.SelectTile(Player.connectionToClient, options);
         if (tile == null) return;
         var tilesToRemove = Board.GetTilesWithinRadius(1, tile.Coord);
         tilesToRemove.ForEach(t => Board.RemoveTile(t.Coord));  

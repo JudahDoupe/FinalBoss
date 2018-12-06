@@ -43,8 +43,8 @@ public class Tile : NetworkBehaviour
 
     /* MESSAGES FROM SERVER */
 
-    [ClientRpc]
-    public void RpcSetSelectable(bool isSelectable)
+    [TargetRpc]
+    public void TargetSetSelectable(NetworkConnection connectionToClient, bool isSelectable)
     {
         IsSelectable = isSelectable;
     }

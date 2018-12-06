@@ -8,18 +8,30 @@ using UnityEngine.Networking;
 public class Fight : MonoBehaviour
 {
     //Fight
+    public static bool GameInProgress = false;
     public static int MaxPlayers = 1;
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
     private static Queue<Player> _turnOrder = new Queue<Player>();
 
+    private static Fight Instance;
+
+    private void Start()
+    {
+        Instance = this;
+    }
+
     public static void JoinFight(Player player)
     {
         Players.Add(player);
-        if (Players.Count == MaxPlayers) StartFight();
+        if (Players.Count == MaxPlayers)
+        {
+            Instance.StartCoroutine(StartFight());
+        }
     }
-    public static void StartFight()
+    public static IEnumerator StartFight()
     {
+        yield return new WaitUntil(() => Players.All(x => x.Token.Coord != null));
         EndTurn();
     }
     public static void EndTurn()

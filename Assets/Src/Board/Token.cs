@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -21,20 +22,6 @@ public class Token : NetworkBehaviour
 
     private void Update ()
     {
-        RpcUpdateTokenPosition();
-    }
-
-    public void SetCoord(TileCoord coord)
-    {
-        Coord = coord;
-        transform.position = coord.Position;
-    }
-
-    /* MESSAGES FROM SERVER */
-
-    [ClientRpc]
-    public void RpcUpdateTokenPosition()
-    {
         if (Coord == null)
         {
             _model.SetActive(false);
@@ -42,7 +29,7 @@ public class Token : NetworkBehaviour
         else
         {
             _model.SetActive(true);
-            transform.rotation = Player.Camera.transform.rotation;
+            transform.rotation = Fight.Players.First(x => x.GetComponent<NetworkIdentity>().isLocalPlayer).Camera.transform.rotation;
 
             if (Vector3.Distance(transform.position, Coord.Position) > Speed * Time.deltaTime)
             {
@@ -50,5 +37,11 @@ public class Token : NetworkBehaviour
                 transform.Translate(dir * Speed * Time.deltaTime, Space.World);
             }
         }
+    }
+
+    public void SetCoord(TileCoord coord)
+    {
+        Coord = coord;
+        transform.position = coord.Position;
     }
 }

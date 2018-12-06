@@ -33,12 +33,12 @@ public class Board : NetworkBehaviour
         }
     }
 
-    public static async Task<Tile> SelectTile(List<Tile> tiles)
+    public static async Task<Tile> SelectTile(NetworkConnection connectionToClient, List<Tile> tiles)
     {
         if (tiles.Count == 0) return null;
         foreach(var tile in tiles)
         {
-            tile.RpcSetSelectable(true);
+            tile.TargetSetSelectable(connectionToClient, true);
         }
 
         await SelectedTile.Task;
@@ -47,7 +47,7 @@ public class Board : NetworkBehaviour
 
         foreach(var tile in tiles)
         {
-            tile.RpcSetSelectable(false);
+            tile.TargetSetSelectable(connectionToClient, false);
         }
         return rtn;
     }
