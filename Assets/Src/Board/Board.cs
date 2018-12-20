@@ -7,59 +7,49 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Random = UnityEngine.Random;
 
-public class Board : NetworkBehaviour
+public class Board : MonoBehaviour
 {
     public List<GameObject> tilePrefabs;
-    private static Board _instance;
+    public List<GameObject> tokenPrefabs;
 
-    public static TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
+    public static Dictionary<Player, TaskCompletionSource<Tile>> SelectedTiles = new Dictionary<Player, TaskCompletionSource<Tile>>();
+    public static Dictionary<Player, Token> Tokens = new Dictionary<Player, Token>();
     public static Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
     public static List<GameObject> TilePrefabs;
+    public static List<GameObject> TokenPrefabs;
 
     void Start()
     {
         TilePrefabs = tilePrefabs;
-        _instance = this;
-        var size = 10;
-        for (int x = -size; x <= size; x++)
-        {
-            for (int y = -size; y <= size; y++)
-            {
-                for (int z = -size; z <= size; z++)
-                {
-                    if(x+y+z == 0)AddTile(new TileCoord(x, y,z));
-                }
-            }
-        }
+        TokenPrefabs = tokenPrefabs;
     }
 
-    public static async Task<Tile> SelectTile(NetworkConnection connectionToClient, List<Tile> tiles)
+    public static async Task<Tile> SelectTile(Player player, List<Tile> tiles)
     {
         if (tiles.Count == 0) return null;
         foreach(var tile in tiles)
         {
-            tile.TargetSetSelectable(connectionToClient, true);
+            tile.TargetSetSelectable(player.connectionToClient, true);
         }
 
-        await SelectedTile.Task;
-        var rtn = SelectedTile.Task.Result;
-        SelectedTile = new TaskCompletionSource<Tile>();
+        await SelectedTiles[player].Task;
+        var rtn = SelectedTiles[player].Task.Result;
+        SelectedTiles[player] = new TaskCompletionSource<Tile>();
 
         foreach(var tile in tiles)
         {
-            tile.TargetSetSelectable(connectionToClient, false);
+            tile.TargetSetSelectable(player.connectionToClient, false);
         }
         return rtn;
     }
 
     public static void AddTile(TileCoord coord)
     {
-        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)],_instance.transform).GetComponent<Tile>();
-        NetworkServer.Spawn(tile.gameObject);
-
+        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)]).GetComponent<Tile>();
         tile.SetCoord(coord);
         tile.IsBuilt = true;
         Tiles[coord] = tile;
+        NetworkServer.Spawn(tile.gameObject);
     }
     public static void RemoveTile(TileCoord coord)
     {
@@ -108,6 +98,36 @@ public class Board : NetworkBehaviour
         return Enumerable.ToList(Tiles.Values);
     }
 
+    public static void AddToken(Player player, int TokenId)
+    {
+        if (GetToken(player) != null) return;
+
+        var token = Instantiate(TokenPrefabs[TokenId]).GetComponent<Token>(); ;
+        NetworkServer.Spawn(token.gameObject);
+        token.SetCoord(null);
+        Tokens.Add(player, token);
+    }
+    public static void MoveToken(Player player, TileCoord coord, bool snapToTile = false)
+    {
+        if(snapToTile)
+            GetToken(player).SetCoord(coord);
+        else
+            GetToken(player).MoveToCoord(coord);
+    }
+    public static Token GetToken(Player player)
+    {
+        if (player == null)
+        {
+            Debug.Log("cannot get token of null player");
+            return null;
+        }
+        if (!Tokens.ContainsKey(player))
+        {
+            Debug.Log("player has not registered a token");
+            return null;
+        }
+        return Tokens[player];
+    }
 }
 
 public class TileCoordComparer : IEqualityComparer<TileCoord>

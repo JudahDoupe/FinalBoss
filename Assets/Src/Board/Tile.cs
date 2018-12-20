@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using Random = System.Random;
@@ -33,12 +34,9 @@ public class Tile : NetworkBehaviour
         transform.position = Coord.Position;
     }
     
-    /* MESSAGES TO SERVER */
-
-    [Command]
-    public void CmdSelectTile()
+    public void SelectTile()
     {
-        Board.SelectedTile.SetResult(this);
+        Player.LocalPlayer.CmdSelectTile(Coord.R, Coord.Q);
     }
 
     /* MESSAGES FROM SERVER */

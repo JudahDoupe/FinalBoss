@@ -4,39 +4,21 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public abstract class Card : UIObject
+public class Card : UIObject
 {
-    public bool IsBeingPlayed;
+    public string CardName;
 
-    public int SecondsToPlay = 0;
     public Player Player;
     public ActionType Type;
 
     public void Click()
     {
-        if (!IsPlayable()) return;
-
-        StartCoroutine(Play());
+        Player.Hand.SelectedCard = this;
+        Player.CmdPlayCard(CardName);
     }
 
-    public abstract void CmdPlay();
-
-    public virtual void Discard()
+    public void Discard()
     {
         Player.Decks[Type].Discard(this);
-    }
-    public virtual bool IsPlayable()
-    {
-        return !Player.IsPlayingCard &&
-               Fight.ActionNumber + SecondsToPlay <= Fight.TurnActions.Length;
-    }
-
-    private IEnumerator Play()
-    {
-        Player.IsPlayingCard = IsBeingPlayed = true;
-        CmdPlay();
-        yield return new WaitUntil(() => IsBeingPlayed == false);
-        Discard();
-        Player.IsPlayingCard = false;
     }
 }

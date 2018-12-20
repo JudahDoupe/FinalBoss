@@ -12,7 +12,9 @@ public class Player : NetworkBehaviour
     public Hand Hand { get; private set; }
     public TurnTimer TurnTimer { get; private set; }
     public Camera Camera { get; private set; }
-    public Token Token;
+    public List<ActionType> Actions = new List<ActionType>();
+
+    public static Player LocalPlayer { get { return FindObjectsOfType<Player>().FirstOrDefault(x => x.isLocalPlayer); } }
 
     [SyncVar]
     public int Health = 20;
@@ -36,22 +38,13 @@ public class Player : NetworkBehaviour
         SetDecksActive(false);
         CmdJoinGame();
 
-        if (!GetComponent<NetworkIdentity>().isLocalPlayer)
+        if (!isLocalPlayer)
         {
             Camera.gameObject.SetActive(false);
         }
     }
-    private IEnumerator SetupTurn()
+    private IEnumerator DrawCards()
     {
-        //Setup
-        if (Token.Coord == null)
-        {
-            CmdPlaceToken();
-            yield return new WaitUntil(() => Token.Coord != null);
-        }
-        SetUiActive(true);
-
-        //Draw Cards
         SetDecksActive(true);
         yield return new WaitUntil(() => Hand.NumCards >= 6);
         SetDecksActive(false);
@@ -72,13 +65,26 @@ public class Player : NetworkBehaviour
     /* MESSAGES TO SERVER */
 
     [Command]
+    public void CmdEndTurn()
+    {
+        Fight.EndTurn();
+    }
+    [Command]
+    public void CmdSelectTile(int r, int q)
+    {
+        var tile = Board.GetTile(new TileCoord(r, q));
+        Board.SelectedTiles[this].SetResult(tile);
+    }
+    [Command]
+    public void CmdPlayCard(string cardName)
+    {
+        Fight.PlayCard(connectionToClient, cardName);
+    }
+
+    [Command]
     private void CmdJoinGame()
     {
-        Token = Instantiate(Token);
-        NetworkServer.Spawn(Token.gameObject);
-        Token.Coord = null;
-        Token.Player = this;
-        CmdPlaceToken();
+        if (Fight.Players.Contains(this)) return;
         Fight.JoinFight(this);
     }
     [Command]
@@ -87,26 +93,38 @@ public class Player : NetworkBehaviour
         Fight.EndFight();
     }
     [Command]
-    private async void CmdPlaceToken()
+    private async void CmdSetupBoard()
     {
-        var tile = await Board.SelectTile(connectionToClient, Board.GetAllTiles());
-        Token.SetCoord(tile.Coord);
+        if (Board.GetToken(this).Coord == null)
+        {
+            var tile = await Board.SelectTile(this, Board.GetAllTiles());
+            Board.MoveToken(this,tile.Coord,true);
+        }
+        TargetStartDrawPhase(connectionToClient);
     }
 
     /* MESSAGES FROM SERVER */
 
-    [ClientRpc]
-    public void RpcStartTurn()
+    [TargetRpc]
+    public void TargetStartTurn(NetworkConnection connectionToClient)
     {
-        StartCoroutine(SetupTurn());
-    } 
-    [ClientRpc]
-    public void RpcEndTurn()
+        CmdSetupBoard();
+    }
+    [TargetRpc]
+    public void TargetStartDrawPhase(NetworkConnection connectionToClient)
+    {
+        SetUiActive(true);
+        StartCoroutine(DrawCards());
+    }
+
+    [TargetRpc]
+    public void TargetEndTurn(NetworkConnection connectionToClient)
     {
         SetUiActive(false);
+        SetDecksActive(false);
     }
-    [ClientRpc]
-    public void RpcDamage(int amount)
+    [TargetRpc]
+    public void TargetDamage(NetworkConnection connectionToClient, int amount)
     {
         Health -= amount;
         if (Health <= 0)
@@ -114,5 +132,25 @@ public class Player : NetworkBehaviour
             Health = 0;
             CmdEndGame();
         }
+    }
+    [TargetRpc]
+    public void TargetPlayCard(NetworkConnection connectionToClient, bool isCardPlayable)
+    {
+        if (isCardPlayable)
+        {
+            Hand.SelectedCard.Discard();
+        }
+        Hand.SelectedCard = null;
+    }
+
+    [ClientRpc]
+    public void RpcAddAction(ActionType type)
+    {
+        Actions.Add(type);
+    }
+    [ClientRpc]
+    public void RpcClearActions()
+    {
+        Actions = new List<ActionType>();
     }
 }

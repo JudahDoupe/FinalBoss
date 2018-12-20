@@ -8,6 +8,7 @@ public class Hand : MonoBehaviour
     public Player Player;
     public List<Card> Cards = new List<Card>();
     public int NumCards { get { return Cards.Count; } }
+    public Card SelectedCard;
 
     public void AddCard(Card card)
     {
@@ -23,7 +24,7 @@ public class Hand : MonoBehaviour
     private void Update()
     {
         RemovePlayedCardsFromHand();
-        var highlightedCard = GetSelectedCard() ?? GetCardBeingHoveredOver();
+        var highlightedCard = SelectedCard ?? GetCardBeingHoveredOver(); 
 
         for (var i = 0; i < NumCards; i++)
         {
@@ -63,9 +64,5 @@ public class Hand : MonoBehaviour
         Physics.Raycast(ray, out hit);
 
         return hit.collider?.gameObject.GetComponent<Card>();
-    }
-    private Card GetSelectedCard()
-    {
-        return Cards.FirstOrDefault(x => x.IsBeingPlayed);
     }
 }

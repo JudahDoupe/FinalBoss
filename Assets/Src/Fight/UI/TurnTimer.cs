@@ -14,29 +14,35 @@ public class TurnTimer : NetworkBehaviour {
 
     public void Update()
     {
-        for (var i = 0; i < Fight.TurnActions.Length; i++)
+        for (int i = 0; i < Fight.ActionsPerTurn; i++)
         {
             Material mat;
-            switch (Fight.TurnActions[i])
+            try
             {
-                case ActionType.Movement:
-                    mat = MovementMaterial;
-                    break;
-                case ActionType.Attack:
-                    mat = AttackMaterial;
-                    break;
-                case ActionType.Special:
-                    mat = SpecialMaterial;
-                    break;
-                case ActionType.Neutral:
-                    mat = NeutralMaterial;
-                    break;
-                default:
-                    mat = NeutralMaterial;
-                    break; 
+                switch (GetComponentInParent<Player>().Actions[i])
+                {
+                    case ActionType.Movement:
+                        mat = MovementMaterial;
+                        break;
+                    case ActionType.Attack:
+                        mat = AttackMaterial;
+                        break;
+                    case ActionType.Special:
+                        mat = SpecialMaterial;
+                        break;
+                    case ActionType.Neutral:
+                        mat = NeutralMaterial;
+                        break;
+                    default:
+                        mat = NeutralMaterial;
+                        break;
+                }
+            }
+            catch
+            {
+                mat = NeutralMaterial;
             }
             Seconds[i].material = mat;
         }
     }
-
 }

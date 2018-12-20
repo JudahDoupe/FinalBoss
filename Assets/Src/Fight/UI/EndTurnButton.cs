@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class EndTurnButton : NetworkBehaviour {
+public class EndTurnButton : MonoBehaviour {
 
 	public void Click()
     {
-        Fight.EndTurn();
+        GetComponentInParent<Player>()?.CmdEndTurn();
     }
 }

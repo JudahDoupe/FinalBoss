@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DetectClicks : MonoBehaviour
 {
-    public bool debug = false;
+    public bool debug = true;
 
 	private Camera _camera;
     private Hit _hit;

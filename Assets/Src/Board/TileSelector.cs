@@ -13,6 +13,6 @@ public class TileSelector : MonoBehaviour {
 
 	public void Click()
     {
-        _tile.CmdSelectTile();
+        _tile.SelectTile();
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Quaternion = UnityEngine.Quaternion;
 
-public class UIObject : NetworkBehaviour
+public class UIObject : MonoBehaviour
 {
     private Vector3 _targetPos;
     private Quaternion _targetRot;
