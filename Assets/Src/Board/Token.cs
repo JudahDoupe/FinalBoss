@@ -41,31 +41,13 @@ public class Token : NetworkBehaviour
 
     public void MoveToCoord(TileCoord coord)
     {
-        if (isServer)
-        {
-            if(coord == null) RpcClearCoord();
-            RpcMoveToCoord(coord.R,coord.Q);
-        }
-        else
-        {
-            Coord = coord;
-            if(coord == null) CmdClearCoord();
-            CmdMoveToCoord(coord.R, coord.Q);
-        }
+        if(coord == null) RpcClearCoord();
+        RpcMoveToCoord(coord.R,coord.Q);
     }
     public void SetCoord(TileCoord coord)
     {
-        if (isServer)
-        {
-            if(coord == null) RpcClearCoord();
-            else RpcSetCoord(coord.R, coord.Q);
-        }
-        else
-        {
-            Coord = coord;
-            if(coord == null) CmdClearCoord();
-            else CmdMoveToCoord(coord.R, coord.Q);
-        }
+        if(coord == null) RpcClearCoord();
+        else RpcSetCoord(coord.R, coord.Q);
     }
 
     [ClientRpc]
@@ -83,25 +65,5 @@ public class Token : NetworkBehaviour
     private void RpcClearCoord()
     {
         Coord = null;
-    }
-
-    [Command]
-    private void CmdSetCoord(int r, int q)
-    {
-        Coord = new TileCoord(r, q);
-        transform.position = Coord.Position;
-        RpcSetCoord(r, q);
-    }
-    [Command]
-    private void CmdMoveToCoord(int r, int q)
-    {
-        Coord = new TileCoord(r, q);
-        RpcMoveToCoord(r, q);
-    }
-    [Command]
-    private void CmdClearCoord()
-    {
-        Coord = null;
-        RpcClearCoord();
     }
 }

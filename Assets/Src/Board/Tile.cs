@@ -27,12 +27,6 @@ public class Tile : NetworkBehaviour
         _selector.SetActive(IsSelectable);
         _model.SetActive(IsBuilt);
     }
-
-    public void SetCoord(TileCoord coord)
-    { 
-        Coord = coord;
-        transform.position = Coord.Position;
-    }
     
     public void SelectTile()
     {
@@ -45,6 +39,13 @@ public class Tile : NetworkBehaviour
     public void TargetSetSelectable(NetworkConnection connectionToClient, bool isSelectable)
     {
         IsSelectable = isSelectable;
+    }
+
+    [ClientRpc]
+    public void RpcSetCoord(int r, int q)
+    {
+        Coord = new TileCoord(r,q);
+        transform.position = Coord.Position;
     }
 
 }

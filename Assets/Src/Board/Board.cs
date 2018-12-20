@@ -46,10 +46,10 @@ public class Board : MonoBehaviour
     public static void AddTile(TileCoord coord)
     {
         var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)]).GetComponent<Tile>();
-        tile.SetCoord(coord);
-        tile.IsBuilt = true;
         Tiles[coord] = tile;
         NetworkServer.Spawn(tile.gameObject);
+        tile.RpcSetCoord(coord.R, coord.Q);
+        tile.IsBuilt = true;
     }
     public static void RemoveTile(TileCoord coord)
     {
