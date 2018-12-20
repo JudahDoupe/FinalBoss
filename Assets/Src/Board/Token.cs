@@ -7,6 +7,9 @@ using UnityEngine.Networking;
 
 public class Token : NetworkBehaviour
 {
+    public int q;
+    public int r;
+    public bool isCoord;
     [CanBeNull]
     public TileCoord Coord;
     [HideInInspector]
@@ -20,6 +23,7 @@ public class Token : NetworkBehaviour
     }
     private void Update ()
     {
+        isCoord = Coord == null;
         if (Coord == null)
         {
             _model.SetActive(false);
@@ -27,9 +31,7 @@ public class Token : NetworkBehaviour
         else
         {
             _model.SetActive(true);
-            var player = Fight.Players.FirstOrDefault(x => x.GetComponent<NetworkIdentity>().isLocalPlayer);
-            if (player == null) return;
-            transform.rotation = player.Camera.transform.rotation;
+            transform.rotation = FindObjectOfType<Camera>()?.transform.rotation ?? transform.rotation;
 
             if (Vector3.Distance(transform.position, Coord.Position) > Speed * Time.deltaTime)
             {
@@ -39,30 +41,21 @@ public class Token : NetworkBehaviour
         }
     }
 
-    public void MoveToCoord(TileCoord coord)
-    {
-        if(coord == null) RpcClearCoord();
-        RpcMoveToCoord(coord.R,coord.Q);
-    }
-    public void SetCoord(TileCoord coord)
-    {
-        if(coord == null) RpcClearCoord();
-        else RpcSetCoord(coord.R, coord.Q);
-    }
-
     [ClientRpc]
-    private void RpcSetCoord(int r, int q)
+    public void RpcSetCoord(int r, int q)
     {
         Coord = new TileCoord(r,q);
         transform.position = Coord.Position;
     }
     [ClientRpc]
-    private void RpcMoveToCoord(int r, int q)
+    public void RpcMoveToCoord(int r, int q)
     {
         Coord = new TileCoord(r, q);
+        this.q = q;
+        this.r = r;
     }
     [ClientRpc]
-    private void RpcClearCoord()
+    public void RpcClearCoord()
     {
         Coord = null;
     }

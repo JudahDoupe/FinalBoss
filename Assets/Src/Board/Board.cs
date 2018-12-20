@@ -104,15 +104,18 @@ public class Board : MonoBehaviour
 
         var token = Instantiate(TokenPrefabs[TokenId]).GetComponent<Token>(); ;
         NetworkServer.Spawn(token.gameObject);
-        token.SetCoord(null);
+        token.Coord = null;
+        token.RpcClearCoord();
         Tokens.Add(player, token);
     }
     public static void MoveToken(Player player, TileCoord coord, bool snapToTile = false)
     {
-        if(snapToTile)
-            GetToken(player).SetCoord(coord);
+        var token = GetToken(player);
+        token.Coord = coord;
+        if (snapToTile)
+            token.RpcSetCoord(coord.R, coord.Q);
         else
-            GetToken(player).MoveToCoord(coord);
+            token.RpcMoveToCoord(coord.R,coord.Q);
     }
     public static Token GetToken(Player player)
     {
