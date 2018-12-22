@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 public class Fight : MonoBehaviour
 {
     public const int ActionsPerTurn = 5;
-    public const int MaxPlayers = 1;
+    public const int MaxPlayers = 2;
     
     //Fight
     public static bool GameInProgress = false;
