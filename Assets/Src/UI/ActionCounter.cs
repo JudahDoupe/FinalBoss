@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionCounter : StaticUI {
+public class ActionCounter : MonoBehaviour {
 
     public Color Movement;
     public Color Attack;
@@ -12,39 +12,52 @@ public class ActionCounter : StaticUI {
 
     public List<Image> Actions;
 
-    public void Update()
-    {
-        Rect.anchoredPosition = Vector2.Lerp(Rect.anchoredPosition, new Vector2(0, IsHidden ? 10 : -10), Time.smoothDeltaTime * 5);
+    private Player _player;
+    private RectTransform _uiTransform;
+    private Vector2 _targetPos;
 
-        for (int i = 0; i < Fight.ActionsPerTurn; i++)
+    void Start()
+    {
+        _uiTransform = GetComponent<RectTransform>();
+        _player = GetComponentInParent<Player>();
+        _targetPos = _uiTransform.anchoredPosition;
+    }
+    void Update()
+    {
+        _uiTransform.anchoredPosition = Vector2.Lerp(_uiTransform.anchoredPosition, _targetPos, Time.smoothDeltaTime * 5);
+
+        for(int i = 0; i < Actions.Count; i++)
         {
-            Color color;
-            try
+            if (i >= _player.Actions.Count)
             {
-                switch (GetComponentInParent<Player>().Actions[i])
+                Actions[i].color = Neutral;
+            }
+            else
+            {
+                switch (_player.Actions[i])
                 {
                     case ActionType.Movement:
-                        color = Movement;
+                        Actions[i].color = Movement;
                         break;
                     case ActionType.Attack:
-                        color = Attack;
+                        Actions[i].color = Attack;
                         break;
                     case ActionType.Special:
-                        color = Special;
+                        Actions[i].color = Special;
                         break;
                     case ActionType.Neutral:
-                        color = Neutral;
+                        Actions[i].color = Neutral;
                         break;
                     default:
-                        color = Neutral;
+                        Actions[i].color = Neutral;
                         break;
                 }
             }
-            catch
-            {
-                color = Neutral;
-            }
-            Actions[i].color = color;
         }
+    }
+
+    public void SetVisible(bool isVisible)
+    {
+        _targetPos = new Vector2(0, isVisible ? -10 : 10);
     }
 }

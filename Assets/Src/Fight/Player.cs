@@ -30,7 +30,6 @@ public class Player : NetworkBehaviour
             Decks.Add(deck.Type,deck);
         }
         Hand = gameObject.GetComponentInChildren<Hand>();
-        Hand.Player = this;
         Camera = gameObject.GetComponentInChildren<Camera>();
         UI = gameObject.GetComponentInChildren<Canvas>();
 
@@ -46,13 +45,13 @@ public class Player : NetworkBehaviour
     private IEnumerator DrawCards()
     {
         SetDecksActive(true);
-        yield return new WaitUntil(() => Hand.NumCards >= 6);
+        yield return new WaitUntil(() => Hand.Cards.Count >= 6);
         SetDecksActive(false);
     }
     private void SetUiActive(bool isActive)
     {
         if (!isActive) SetDecksActive(isActive);
-        Hand.IsHidden = !isActive;
+        Hand.SetVisible(isActive);
         UI?.gameObject.SetActive(isActive);
     }
     private void SetDecksActive(bool isActive)
@@ -111,6 +110,10 @@ public class Player : NetworkBehaviour
     [TargetRpc]
     public void TargetStartDrawPhase(NetworkConnection connectionToClient)
     {
+        foreach (var deck in Decks.Values)
+        {
+            deck.Shuffle();
+        }
         SetUiActive(true);
         StartCoroutine(DrawCards());
     }
@@ -136,9 +139,10 @@ public class Player : NetworkBehaviour
     {
         if (isCardPlayable)
         {
-            Hand.SelectedCard.Discard();
+            Hand.CardBeingPlayed.Discard();
         }
-        Hand.SelectedCard = null;
+
+        Hand.CardBeingPlayed = null;
     }
 
     [ClientRpc]

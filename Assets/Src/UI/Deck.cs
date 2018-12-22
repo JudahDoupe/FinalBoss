@@ -5,17 +5,19 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Deck : StaticUI
+public class Deck : MonoBehaviour
 {
-    private readonly Queue<Card> _cards = new Queue<Card>();
-    private readonly Queue<Card> _discardedCards = new Queue<Card>();
-    private Player _player;
-
     public ActionType Type;
 
-    private void Start()
+    private readonly Queue<Card> _drawPile = new Queue<Card>();
+    private readonly Queue<Card> _discardPile = new Queue<Card>();
+    private Player _player;
+    private Button _button;
+
+    private void Awake()
     {
-        _player = transform.GetComponentInParent<Player>();
+        _player = GetComponentInParent<Player>();
+        _button = GetComponent<Button>();
         foreach (var card in GetComponentsInChildren<Card>())
         {
             card.Player = _player;
@@ -25,32 +27,31 @@ public class Deck : StaticUI
     }
     private void Update()
     {
-        GetComponent<Button>().interactable = _cards.Any();
+        _button.interactable = _drawPile.Any();
     }
 
     public void Draw()
     {
-        if (_player.Hand.NumCards >= 6) return;
-        var card = _cards.Count > 0 ? _cards.Dequeue() : null;
-        if (card == null) return;
-        card.IsHidden = false;
+        if (_player.Hand.Cards.Count >= 6 || !_drawPile.Any()) return;
+
+        var card = _drawPile.Dequeue();
+        card.SetVisible(true);
         _player.Hand.AddCard(card);
     }
     public void Discard(Card card)
     {
-        //Should be enquing into the discard pile
-        _cards.Enqueue(card);
-        card.SetParent(transform);
+        _discardPile.Enqueue(card);
+        card.transform.parent = transform;
         card.SnapTo(Vector3.zero, Vector3.zero);
-        card.IsHidden = true;
+        card.SetVisible(false);
     }
     public void Shuffle()
     {
-        var shuffled = _discardedCards.OrderBy(a => Guid.NewGuid()).ToArray();
-        _discardedCards.Clear();
+        var shuffled = _discardPile.OrderBy(a => Guid.NewGuid()).ToArray();
         foreach (var card in shuffled)
         {
-            _cards.Enqueue(card);
+            _drawPile.Enqueue(card);
         }
+        _discardPile.Clear();
     }
 }

@@ -4,12 +4,20 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements;
 
-public class Hand : StaticUI
+public class Hand : MonoBehaviour
 {
-    public Player Player;
     public List<Card> Cards = new List<Card>();
-    public int NumCards { get { return Cards.Count; } }
-    public Card SelectedCard;
+    public Card CardBeingPlayed;
+
+    private Player _player;
+    private RectTransform _uiTransform;
+    private Vector2 _targetPos;
+
+    void Awake()
+    {
+        _uiTransform = GetComponent<RectTransform>();
+        _player = GetComponentInParent<Player>();
+    }
 
     public void AddCard(Card card)
     {
@@ -17,37 +25,37 @@ public class Hand : StaticUI
         card.transform.parent = transform;
         Cards.Add(card);
     }
-    public void RemoveCard(Card card)
+    public void SetVisible(bool isVisible)
     {
-        Cards.Remove(card);
+        _targetPos = new Vector2(0, isVisible ? 40 : -60);
     }
 
-    private void Update()
+    void Update()
     {
+        _uiTransform.anchoredPosition = Vector2.Lerp(_uiTransform.anchoredPosition, _targetPos, Time.smoothDeltaTime * 5);
         RemovePlayedCardsFromHand();
-        Rect.anchoredPosition = Vector2.Lerp(Rect.anchoredPosition, new Vector2(0, IsHidden ? -60: 40), Time.smoothDeltaTime * 5);
 
-        for (var i = 0; i < NumCards; i++)
+        for (var i = 0; i < Cards.Count; i++)
         {
             var card = Cards[i];
-            var cardDencity = card.Rect.sizeDelta.x * 0.75f;
-            var horizontalOffset = i - (NumCards-1) / 2f;
+            var cardDencity = card.UITransform.sizeDelta.x * 0.75f;
+            var horizontalOffset = i - (Cards.Count - 1) / 2f;
             var verticalOffset = -3 * horizontalOffset * horizontalOffset;
             var targetPos = new Vector3(horizontalOffset * cardDencity , verticalOffset, i * -0.001f);
             var targetRot = new Vector3(0, 0, -5 * horizontalOffset);
 
-            if (card == SelectedCard)
+            if (card == CardBeingPlayed || card.Selected)
             {
-                card.Rect.localScale = new Vector3(1.4f,1.4f,1.4f);
-                targetPos.y = card.Rect.sizeDelta.y / 2;
+                targetPos.y = card.UITransform.sizeDelta.y / 2;
                 card.SnapTo(targetPos, Vector3.zero);
                 card.transform.SetAsLastSibling();
+                card.UITransform.localScale = new Vector3(1.4f,1.4f,1.4f);
             }
             else
             {
                 card.MoveTo(targetPos,targetRot);
                 card.transform.SetSiblingIndex(i);
-                card.Rect.localScale = new Vector3(1,1,1);
+                card.UITransform.localScale = new Vector3(1,1,1);
             }
 
         }
