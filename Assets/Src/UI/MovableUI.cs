@@ -1,17 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
-using Quaternion = UnityEngine.Quaternion;
+using UnityEngine.UI;
 
-public class UIObject : MonoBehaviour
+public class MovableUI : MonoBehaviour
 {
+    public RectTransform Rect;
+    public bool IsHidden;
     private Vector3 _targetPos;
     private Quaternion _targetRot;
 
-	void Update () {
-	    transform.localPosition = Vector3.Lerp(transform.localPosition,_targetPos, Time.deltaTime * 5);
+    void Start()
+    {
+        Rect = GetComponent<RectTransform>();
+    }
+    public void Update()
+    {
+	    GetComponent<RectTransform>().anchoredPosition = Vector3.Lerp(transform.localPosition,_targetPos, Time.deltaTime * 5);
 	    transform.localRotation = Quaternion.RotateTowards(transform.localRotation, _targetRot, Time.deltaTime * 100);
+
+        GetComponent<Button>().enabled = !IsHidden;
+        GetComponent<Image>().enabled = !IsHidden;
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(!IsHidden);
+        }
     }
 
     public void MoveTo(Vector3 position, Vector3 eulerAngle)
@@ -27,7 +40,7 @@ public class UIObject : MonoBehaviour
     public void SnapTo(Vector3 position, Vector3 eulerAngle)
     {
         MoveTo(position, eulerAngle);
-        transform.localPosition = _targetPos;
+        GetComponent<RectTransform>().anchoredPosition = _targetPos;
         transform.localRotation = _targetRot;
     }
 

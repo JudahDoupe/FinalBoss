@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 
 public class Fight : MonoBehaviour
 {
-    public const int ActionsPerTurn = 5;
+    public const int ActionsPerTurn = 6;
     public const int MaxPlayers = 2;
     
     //Fight
@@ -71,22 +71,22 @@ public class Fight : MonoBehaviour
         if (!isPlayable) return;
         switch (cardName)
         {
-            case "Move1":
+            case "Dodge":
                 await CardExecutor.Move(player,1);
                 UseActions(ActionType.Movement,1);
                 player.Initiative += 1;
                 break;
-            case "Move2":
+            case "Walk":
                 await CardExecutor.Move(player,2);
                 UseActions(ActionType.Movement, 2);
                 player.Initiative += 2;
                 break;
-            case "Move3":
+            case "Run":
                 await CardExecutor.Move(player,3);
                 UseActions(ActionType.Movement, 3);
                 player.Initiative += 3;
                 break;
-            case "Attack1":
+            case "Punch":
                 await CardExecutor.Attack(player,1);
                 UseActions(ActionType.Attack, 1);
                 player.Initiative += 2;
@@ -126,7 +126,7 @@ public class Fight : MonoBehaviour
         {
             player.RpcClearActions();
         }
-        TurnActions = new[] { ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral };
+        TurnActions = new[] { ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral, ActionType.Neutral };
         ActionNumber = 0;
     }
 }

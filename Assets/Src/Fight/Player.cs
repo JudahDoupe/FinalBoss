@@ -10,8 +10,8 @@ public class Player : NetworkBehaviour
 {
     public Dictionary<ActionType, Deck> Decks = new Dictionary<ActionType, Deck>();
     public Hand Hand { get; private set; }
-    public TurnTimer TurnTimer { get; private set; }
     public Camera Camera { get; private set; }
+    public Canvas UI { get; private set; }
     public List<ActionType> Actions = new List<ActionType>();
 
     public static Player LocalPlayer { get { return FindObjectsOfType<Player>().FirstOrDefault(x => x.isLocalPlayer); } }
@@ -31,8 +31,8 @@ public class Player : NetworkBehaviour
         }
         Hand = gameObject.GetComponentInChildren<Hand>();
         Hand.Player = this;
-        TurnTimer = gameObject.GetComponentInChildren<TurnTimer>();
         Camera = gameObject.GetComponentInChildren<Camera>();
+        UI = gameObject.GetComponentInChildren<Canvas>();
 
         SetUiActive(false);
         SetDecksActive(false);
@@ -51,15 +51,13 @@ public class Player : NetworkBehaviour
     }
     private void SetUiActive(bool isActive)
     {
-        Hand?.gameObject.SetActive(isActive);
-        TurnTimer?.gameObject.SetActive(isActive);
+        if (!isActive) SetDecksActive(isActive);
+        Hand.IsHidden = !isActive;
+        UI?.gameObject.SetActive(isActive);
     }
     private void SetDecksActive(bool isActive)
     {
-        foreach (var deck in Decks.Values)
-        {
-            deck.gameObject.SetActive(isActive);
-        }
+        UI.transform.Find("Decks").gameObject.SetActive(isActive);
     }
 
     /* MESSAGES TO SERVER */

@@ -1,48 +1,50 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
+using UnityEngine.UI;
 
-public class TurnTimer : NetworkBehaviour {
+public class ActionCounter : StaticUI {
 
-    public Material MovementMaterial;
-    public Material AttackMaterial;
-    public Material SpecialMaterial;
-    public Material NeutralMaterial;
+    public Color Movement;
+    public Color Attack;
+    public Color Special;
+    public Color Neutral;
 
-    public List<Renderer> Seconds;
+    public List<Image> Actions;
 
     public void Update()
     {
+        Rect.anchoredPosition = Vector2.Lerp(Rect.anchoredPosition, new Vector2(0, IsHidden ? 10 : -10), Time.smoothDeltaTime * 5);
+
         for (int i = 0; i < Fight.ActionsPerTurn; i++)
         {
-            Material mat;
+            Color color;
             try
             {
                 switch (GetComponentInParent<Player>().Actions[i])
                 {
                     case ActionType.Movement:
-                        mat = MovementMaterial;
+                        color = Movement;
                         break;
                     case ActionType.Attack:
-                        mat = AttackMaterial;
+                        color = Attack;
                         break;
                     case ActionType.Special:
-                        mat = SpecialMaterial;
+                        color = Special;
                         break;
                     case ActionType.Neutral:
-                        mat = NeutralMaterial;
+                        color = Neutral;
                         break;
                     default:
-                        mat = NeutralMaterial;
+                        color = Neutral;
                         break;
                 }
             }
             catch
             {
-                mat = NeutralMaterial;
+                color = Neutral;
             }
-            Seconds[i].material = mat;
+            Actions[i].color = color;
         }
     }
 }

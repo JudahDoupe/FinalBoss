@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class Deck : UIObject
+public class Deck : StaticUI
 {
     private readonly Queue<Card> _cards = new Queue<Card>();
     private readonly Queue<Card> _discardedCards = new Queue<Card>();
@@ -24,24 +25,24 @@ public class Deck : UIObject
     }
     private void Update()
     {
-        foreach (var card in _cards)
-        {
-            card.transform.localPosition = Vector3.Lerp(card.transform.localPosition, Vector3.zero, 3 * Time.deltaTime);
-            card.transform.localEulerAngles = Vector3.Lerp(card.transform.localEulerAngles, Vector3.zero, 3 * Time.deltaTime);
-        }
+        GetComponent<Button>().interactable = _cards.Any();
     }
 
-    public Card Draw()
+    public void Draw()
     {
-        if (!_cards.Any())
-            Shuffle();
-        return _cards.Count > 0 ? _cards.Dequeue() : null;
+        if (_player.Hand.NumCards >= 6) return;
+        var card = _cards.Count > 0 ? _cards.Dequeue() : null;
+        if (card == null) return;
+        card.IsHidden = false;
+        _player.Hand.AddCard(card);
     }
     public void Discard(Card card)
     {
-        _discardedCards.Enqueue(card);
+        //Should be enquing into the discard pile
+        _cards.Enqueue(card);
         card.SetParent(transform);
         card.SnapTo(Vector3.zero, Vector3.zero);
+        card.IsHidden = true;
     }
     public void Shuffle()
     {
@@ -51,13 +52,5 @@ public class Deck : UIObject
         {
             _cards.Enqueue(card);
         }
-    }
-
-    public void Click()
-    {
-        if (_player.Hand.NumCards >= 6) return;
-        var card = Draw();
-        if (card == null) return;
-        _player.Hand.AddCard(card);
     }
 }
