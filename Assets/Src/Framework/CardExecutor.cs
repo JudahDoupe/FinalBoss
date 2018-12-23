@@ -20,7 +20,7 @@ public class CardExecutor : MonoBehaviour{
         var tile = await Board.SelectTile(player, options);
 
         var damagee = Fight.Players.SingleOrDefault(x => Board.GetToken(x).Coord == tile.Coord);
-        if (damagee != null) damagee.TargetDamage(damagee.connectionToClient, damage);
+        if (damagee != null) damagee.Health -= damage;
     }
     public static async Task Bomb(Player player)
     {

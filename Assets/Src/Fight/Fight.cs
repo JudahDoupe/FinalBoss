@@ -11,7 +11,6 @@ public class Fight : MonoBehaviour
     public const int MaxPlayers = 2;
     
     //Fight
-    public static bool GameInProgress = false;
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
     private static Queue<Player> _turnOrder = new Queue<Player>();
@@ -21,10 +20,8 @@ public class Fight : MonoBehaviour
         Players.Add(player);
         Board.SelectedTiles.Add(player, new TaskCompletionSource<Tile>());
         Board.AddToken(player,0);
-        if (Players.Count == MaxPlayers)
-        {
-            StartFight();
-        }
+
+        if (Players.Count == MaxPlayers) StartFight();
     }
     public static void StartFight()
     {
@@ -39,19 +36,22 @@ public class Fight : MonoBehaviour
                 }
             }
         }
-        EndTurn();
-    }
-    public static void EndTurn()
-    {
-        if (!_turnOrder.Any()) { EndRound();}
-        Players.ForEach(p => p.TargetEndTurn(p.connectionToClient));
 
+        EstablishTurnOrder();
+        Players.ForEach(p => p.TargetWatchGame(p.connectionToClient));
+        NextTurn();
+    }
+    public static void NextTurn()
+    {
         ClearActions();
+        ActivePlayer?.TargetWatchGame(ActivePlayer.connectionToClient);
+
+        if (!_turnOrder.Any()) EstablishTurnOrder();
 
         ActivePlayer = _turnOrder.Dequeue();
         ActivePlayer.TargetStartTurn(ActivePlayer.connectionToClient); 
     }
-    public static void EndRound()
+    public static void EstablishTurnOrder()
     {
         var players = new List<Player>(Players);
         players.OrderBy(x => x.Initiative);
@@ -67,8 +67,12 @@ public class Fight : MonoBehaviour
     {
         var isPlayable = IsCardPlayable(cardName);
         var player = Players.First(x => x.connectionToClient == connectionToClient);
-        player.TargetPlayCard(connectionToClient, isPlayable);
-        if (!isPlayable) return;
+        if (!isPlayable)
+        {
+            player.TargetFinishPlayingCard(connectionToClient, false);
+            return;
+        }
+
         switch (cardName)
         {
             case "Dodge":
@@ -97,11 +101,13 @@ public class Fight : MonoBehaviour
                 player.Initiative += 8;
                 break;
         }
+
+        player.TargetFinishPlayingCard(connectionToClient, true);
     }
     private static bool IsCardPlayable(string cardName)
     {
         var cardActions = 1;
-        return ActionNumber + cardActions < ActionsPerTurn;
+        return ActionNumber + cardActions <= ActionsPerTurn;
     }
 
     //Action Counter

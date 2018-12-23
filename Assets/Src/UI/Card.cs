@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
-public class Card : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler
+public class Card : Selectable
 {
     public string Name;
     public ActionType Type;
@@ -14,10 +15,12 @@ public class Card : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler
     [HideInInspector]
     public Player Player;
 
-    public bool Selected { get; private set; }
+    public new bool IsHighlighted { get; private set; }
     public RectTransform UITransform { get; private set; }
     private Vector3 _targetPos;
     private Quaternion _targetRot;
+
+    private BaseEventData m_BaseEvent;
 
     void Awake()
     {
@@ -25,18 +28,21 @@ public class Card : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler
     }
     void Update()
     {
+        IsHighlighted = IsHighlighted(m_BaseEvent) || IsPressed();
         UITransform.anchoredPosition = Vector3.Lerp(transform.localPosition, _targetPos, Time.deltaTime * 5);
         transform.localRotation = Quaternion.RotateTowards(transform.localRotation, _targetRot, Time.deltaTime * 100);
     }
 
     public void Play()
     {
+        if(!Player.Hand.IsPlayable()) return;
         Player.CmdPlayCard(Name);
         Player.Hand.CardBeingPlayed = this;
+        Player.Hand.SetVisible(false);
     }
     public void Discard()
     {
-        Player.Decks[Type].Discard(this);
+        Player.Decks.First(d => d.Type == Type).Discard(this);
     }
 
     public void MoveTo(Vector3 position, Vector3 eulerAngle)
@@ -62,14 +68,5 @@ public class Card : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler
         {
             child.gameObject.SetActive(isVisible);
         }
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        Selected = true;
-    }
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        Selected = false;
     }
 }
