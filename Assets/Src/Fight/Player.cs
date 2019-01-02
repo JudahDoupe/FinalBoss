@@ -69,7 +69,7 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdPlayCard(string cardName)
     {
-        Fight.PlayCard(connectionToClient, cardName);
+        CardExecutor.PlayCard(connectionToClient, cardName);
     }
 
     /* MESSAGES FROM SERVER */

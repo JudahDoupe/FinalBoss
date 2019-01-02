@@ -8,12 +8,14 @@ using UnityEngine.Networking;
 public class Fight : MonoBehaviour
 {
     public const int ActionsPerTurn = 6;
-    public const int MaxPlayers = 2;
+    public const int MaxPlayers = 1;
     
-    //Fight
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
     private static Queue<Player> _turnOrder = new Queue<Player>();
+
+    public static ActionType[] TurnActions { get; private set; }
+    public static int ActionNumber { get; private set; }
 
     public static void JoinFight(Player player)
     {
@@ -62,69 +64,14 @@ public class Fight : MonoBehaviour
         Application.Quit();
     }
 
-    //Cards
-    public static async void PlayCard(NetworkConnection connectionToClient, string cardName)
+    public static void UseActions(ActionType type)
     {
-        var isPlayable = IsCardPlayable(cardName);
-        var player = Players.First(x => x.connectionToClient == connectionToClient);
-        if (!isPlayable)
+        foreach (var player in Players)
         {
-            player.TargetFinishPlayingCard(connectionToClient, false);
-            return;
+            player.RpcAddAction(type);
         }
-
-        switch (cardName)
-        {
-            case "Dodge":
-                await CardExecutor.Move(player,1);
-                UseActions(ActionType.Movement,1);
-                player.Initiative += 1;
-                break;
-            case "Walk":
-                await CardExecutor.Move(player,2);
-                UseActions(ActionType.Movement, 2);
-                player.Initiative += 2;
-                break;
-            case "Run":
-                await CardExecutor.Move(player,3);
-                UseActions(ActionType.Movement, 3);
-                player.Initiative += 3;
-                break;
-            case "Punch":
-                await CardExecutor.Attack(player,1);
-                UseActions(ActionType.Attack, 1);
-                player.Initiative += 2;
-                break;
-            case "Bomb":
-                await CardExecutor.Bomb(player);
-                UseActions(ActionType.Special, 3);
-                player.Initiative += 8;
-                break;
-        }
-
-        player.TargetFinishPlayingCard(connectionToClient, true);
-    }
-    private static bool IsCardPlayable(string cardName)
-    {
-        var cardActions = 1;
-        return ActionNumber + cardActions <= ActionsPerTurn;
-    }
-
-    //Action Counter
-    public static ActionType[] TurnActions { get; private set; }
-    public static int ActionNumber { get; private set; }
-
-    public static void UseActions(ActionType type, int amount)
-    {
-        for (int i = 0; i < amount; i++)
-        {
-            foreach (var player in Players)
-            {
-                player.RpcAddAction(type);
-            }
-            TurnActions[ActionNumber] = type;
-            ActionNumber++;
-        }
+        TurnActions[ActionNumber] = type;
+        ActionNumber++;
     }
     public static void ClearActions()
     {
