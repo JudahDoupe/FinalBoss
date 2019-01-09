@@ -11,17 +11,38 @@ public class Board : MonoBehaviour
 {
     public List<GameObject> tilePrefabs;
     public List<GameObject> tokenPrefabs;
+    private static List<GameObject> _tilePrefabs;
+    private static List<GameObject> _tokenPrefabs;
 
-    public static Dictionary<Player, TaskCompletionSource<Tile>> SelectedTiles = new Dictionary<Player, TaskCompletionSource<Tile>>();
-    public static Dictionary<Player, Token> Tokens = new Dictionary<Player, Token>();
+    public static Dictionary<Player, Token> PlayerTokens = new Dictionary<Player, Token>();
     public static Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
-    public static List<GameObject> TilePrefabs;
-    public static List<GameObject> TokenPrefabs;
 
     void Start()
     {
-        TilePrefabs = tilePrefabs;
-        TokenPrefabs = tokenPrefabs;
+        _tilePrefabs = tilePrefabs;
+        _tokenPrefabs = tokenPrefabs;
+    }
+
+    public static void Build()
+    {
+        var size = 10;
+        for (int x = -size; x <= size; x++)
+        {
+            for (int y = -size; y <= size; y++)
+            {
+                for (int z = -size; z <= size; z++)
+                {
+                    if (x + y + z == 0) AddTile(new TileCoord(x, y, z));
+                }
+            }
+        }
+    }
+    public static void Destroy()
+    {
+        foreach (var tile in Tiles)
+        {
+            Destroy(tile.Value);
+        }
     }
 
     public static async Task<Tile> SelectTile(Player player, List<Tile> tiles)
@@ -29,27 +50,27 @@ public class Board : MonoBehaviour
         if (tiles.Count == 0) return null;
         foreach(var tile in tiles)
         {
-            tile.TargetSetSelectable(player.connectionToClient, true);
+            tile.TargetIsSelectable(player.connectionToClient, true);
         }
 
-        await SelectedTiles[player].Task;
-        var rtn = SelectedTiles[player].Task.Result;
-        SelectedTiles[player] = new TaskCompletionSource<Tile>();
+        await player.SelectedTile.Task;
+        var rtn = player.SelectedTile.Task.Result;
+        player.SelectedTile = new TaskCompletionSource<Tile>();
 
         foreach(var tile in tiles)
         {
-            tile.TargetSetSelectable(player.connectionToClient, false);
+            tile.TargetIsSelectable(player.connectionToClient, false);
         }
         return rtn;
     }
 
     public static void AddTile(TileCoord coord)
     {
-        var tile = Instantiate(TilePrefabs[Random.Range(0, TilePrefabs.Count)]).GetComponent<Tile>();
+        var tile = Instantiate(_tilePrefabs[Random.Range(0, _tilePrefabs.Count)]).GetComponent<Tile>();
         Tiles[coord] = tile;
         NetworkServer.Spawn(tile.gameObject);
-        tile.RpcSetCoord(coord.R, coord.Q);
-        tile.IsBuilt = true;
+        tile.RpcMove(coord.R, coord.Q);
+        tile.IsSolid = true;
     }
     public static void RemoveTile(TileCoord coord)
     {
@@ -102,11 +123,11 @@ public class Board : MonoBehaviour
     {
         if (GetToken(player) != null) return;
 
-        var token = Instantiate(TokenPrefabs[TokenId]).GetComponent<Token>(); ;
+        var token = Instantiate(_tokenPrefabs[TokenId]).GetComponent<Token>(); ;
         NetworkServer.Spawn(token.gameObject);
         token.Coord = null;
         token.RpcClearCoord();
-        Tokens.Add(player, token);
+        PlayerTokens.Add(player, token);
     }
     public static void MoveToken(Player player, TileCoord coord, bool snapToTile = false)
     {
@@ -124,12 +145,12 @@ public class Board : MonoBehaviour
             Debug.Log("cannot get token of null player");
             return null;
         }
-        if (!Tokens.ContainsKey(player))
+        if (!PlayerTokens.ContainsKey(player))
         {
             Debug.Log("player has not registered a token");
             return null;
         }
-        return Tokens[player];
+        return PlayerTokens[player];
     }
 }
 

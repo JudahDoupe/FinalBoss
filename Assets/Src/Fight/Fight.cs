@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 public class Fight : MonoBehaviour
 {
     public const int ActionsPerTurn = 6;
-    public const int MaxPlayers = 1;
+    public const int MaxPlayers = 2;
     
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
@@ -20,24 +20,13 @@ public class Fight : MonoBehaviour
     public static void JoinFight(Player player)
     {
         Players.Add(player);
-        Board.SelectedTiles.Add(player, new TaskCompletionSource<Tile>());
         Board.AddToken(player,0);
 
         if (Players.Count == MaxPlayers) StartFight();
     }
     public static void StartFight()
     {
-        var size = 10;
-        for (int x = -size; x <= size; x++)
-        {
-            for (int y = -size; y <= size; y++)
-            {
-                for (int z = -size; z <= size; z++)
-                {
-                    if (x + y + z == 0) Board.AddTile(new TileCoord(x, y, z));
-                }
-            }
-        }
+        Board.Build();
 
         EstablishTurnOrder();
         Players.ForEach(p => p.TargetWatchGame(p.connectionToClient));

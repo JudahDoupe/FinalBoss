@@ -8,10 +8,12 @@ using Random = System.Random;
 
 public class Tile : NetworkBehaviour
 {
-    public static float Size = 1;
     public TileCoord Coord;
+    public Connection[] Connections = new Connection[6];
+    public Token Token;
+
     [SyncVar]
-    public bool IsBuilt;
+    public bool IsSolid;
     public bool IsSelectable;
 
     private GameObject _model;
@@ -25,29 +27,49 @@ public class Tile : NetworkBehaviour
     void Update()
     {
         _selector.SetActive(IsSelectable);
-        _model.SetActive(IsBuilt);
+        _model.SetActive(IsSolid);
     }
-    
+
+    public void Connect(ConnectionDirection direction, Tile tile)
+    {
+        Connections[(int)direction] = new Connection(this, tile);
+    }
     public void SelectTile()
     {
         Player.LocalPlayer.CmdSelectTile(Coord.R, Coord.Q);
     }
 
-    /* MESSAGES FROM SERVER */
-
     [TargetRpc]
-    public void TargetSetSelectable(NetworkConnection connectionToClient, bool isSelectable)
+    public void TargetIsSelectable(NetworkConnection connectionToClient, bool isSelectable)
     {
         IsSelectable = isSelectable;
     }
 
     [ClientRpc]
-    public void RpcSetCoord(int r, int q)
+    public void RpcMove(int r, int q)
     {
         Coord = new TileCoord(r,q);
         transform.position = Coord.Position;
     }
+}
 
+public class Connection
+{
+    private Tile _from;
+    private Tile _to;
+
+    public Connection(Tile from, Tile to)
+    {
+        _from = from;
+        _to = to;
+    }
+
+    public Tile To(Tile from)
+    {
+        if (from == _from) return _to;
+        else if (from == _to) return _from;
+        else return null;
+    }
 }
 
 [Serializable]
@@ -82,4 +104,14 @@ public class TileCoord
         VerticalOffset = random.Next(-300, 300) * 0.0001f;
     }
 
+}
+
+public enum ConnectionDirection
+{
+    North = 0,
+    NorthEast = 1,
+    SouthEast = 2,
+    South = 3,
+    SouthWest = 4,
+    NorthWest = 5,
 }

@@ -8,12 +8,13 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
-    public static Player LocalPlayer { get { return FindObjectsOfType<Player>().FirstOrDefault(x => x.isLocalPlayer); } }
-
     public List<Deck> Decks;
     public Hand Hand;
     public UIState UI;
     public Camera Camera;
+
+    public static Player LocalPlayer { get { return FindObjectsOfType<Player>().FirstOrDefault(x => x.isLocalPlayer); } }
+    public TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
 
     [SyncVar]
     public int Health = 20;
@@ -64,7 +65,7 @@ public class Player : NetworkBehaviour
     public void CmdSelectTile(int r, int q)
     {
         var tile = Board.GetTile(new TileCoord(r, q));
-        Board.SelectedTiles[this].SetResult(tile);
+        SelectedTile.SetResult(tile);
     }
     [Command]
     public void CmdPlayCard(string cardName)
