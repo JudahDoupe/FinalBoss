@@ -8,18 +8,19 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
+    [SyncVar]
+    public int Health = 20;
+    [SyncVar]
+    public int Initiative = 0;
+
     public List<Deck> Decks;
     public Hand Hand;
     public UIState UI;
     public Camera Camera;
 
     public static Player LocalPlayer { get { return FindObjectsOfType<Player>().FirstOrDefault(x => x.isLocalPlayer); } }
-    public TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
 
-    [SyncVar]
-    public int Health = 20;
-    [SyncVar]
-    public int Initiative = 0;
+    private TaskCompletionSource<Tile> SelectedTile = new TaskCompletionSource<Tile>();
 
     private void Start()
     {
@@ -38,6 +39,27 @@ public class Player : NetworkBehaviour
         UI.ShowPlayState();
     }
 
+    /* Should only be run on server */
+
+    public async Task<Tile> SelectTile(List<Tile> options)
+    {
+        if (options.Count == 0) return null;
+        foreach (var tile in options)
+        {
+            tile.TargetIsSelectable(connectionToClient, true);
+        }
+
+        SelectedTile = new TaskCompletionSource<Tile>();
+        await SelectedTile.Task;
+        var rtn = SelectedTile.Task.Result;
+    
+        foreach (var tile in options)
+        {
+            tile.TargetIsSelectable(connectionToClient, false);
+        }
+        return rtn;
+    }
+
     /* MESSAGES TO SERVER */
 
     [Command]
@@ -51,7 +73,7 @@ public class Player : NetworkBehaviour
     {
         if (Board.GetToken(this).Coord == null)
         {
-            var tile = await Board.SelectTile(this, Board.GetAllTiles());
+            var tile = await SelectTile(Board.GetAllTiles());
             Board.MoveToken(this,tile.Coord,true);
         }
         TargetStartDrawPhase(connectionToClient);

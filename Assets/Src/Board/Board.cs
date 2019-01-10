@@ -11,8 +11,10 @@ public class Board : MonoBehaviour
 {
     public List<GameObject> tilePrefabs;
     public List<GameObject> tokenPrefabs;
+    public GameObject connectionPrefab;
     private static List<GameObject> _tilePrefabs;
     private static List<GameObject> _tokenPrefabs;
+    private static GameObject _connectionPrefab;
 
     public static Dictionary<Player, Token> PlayerTokens = new Dictionary<Player, Token>();
     public static Dictionary<TileCoord,Tile> Tiles = new Dictionary<TileCoord, Tile>(new TileCoordComparer());
@@ -21,6 +23,7 @@ public class Board : MonoBehaviour
     {
         _tilePrefabs = tilePrefabs;
         _tokenPrefabs = tokenPrefabs;
+        _connectionPrefab = connectionPrefab;
     }
 
     public static void Build()
@@ -41,27 +44,8 @@ public class Board : MonoBehaviour
     {
         foreach (var tile in Tiles)
         {
-            Destroy(tile.Value);
+            RemoveTile(tile.Key);
         }
-    }
-
-    public static async Task<Tile> SelectTile(Player player, List<Tile> tiles)
-    {
-        if (tiles.Count == 0) return null;
-        foreach(var tile in tiles)
-        {
-            tile.TargetIsSelectable(player.connectionToClient, true);
-        }
-
-        await player.SelectedTile.Task;
-        var rtn = player.SelectedTile.Task.Result;
-        player.SelectedTile = new TaskCompletionSource<Tile>();
-
-        foreach(var tile in tiles)
-        {
-            tile.TargetIsSelectable(player.connectionToClient, false);
-        }
-        return rtn;
     }
 
     public static void AddTile(TileCoord coord)
@@ -70,12 +54,41 @@ public class Board : MonoBehaviour
         Tiles[coord] = tile;
         NetworkServer.Spawn(tile.gameObject);
         tile.RpcMove(coord.R, coord.Q);
-        tile.IsSolid = true;
+
+        Tuple<ConnectionDirection, TileCoord>[] directions = new[]
+        {
+            new Tuple<ConnectionDirection, TileCoord>(ConnectionDirection.East, new TileCoord(1,0)), 
+            new Tuple<ConnectionDirection, TileCoord>(ConnectionDirection.SouthEast, new TileCoord(0,1)), 
+            new Tuple<ConnectionDirection, TileCoord>(ConnectionDirection.SouthWest, new TileCoord(-1,1)), 
+            new Tuple<ConnectionDirection, TileCoord>(ConnectionDirection.West, new TileCoord(-1,0)), 
+            new Tuple<ConnectionDirection, TileCoord>(ConnectionDirection.NorthWest, new TileCoord(0,-1)), 
+            new Tuple<ConnectionDirection, TileCoord>(ConnectionDirection.NorthEast, new TileCoord(1,-1)), 
+        };
+
+        foreach (var (dir, dirCoord) in directions)
+        {
+            var neighborCoord = new TileCoord(coord.R + dirCoord.R, coord.Q + dirCoord.Q);
+            if (Tiles.ContainsKey(neighborCoord))
+            {
+                var neighborTile = Tiles[neighborCoord];
+                var connection = Instantiate(_connectionPrefab).GetComponent<Connection>();
+                NetworkServer.Spawn(connection.gameObject);
+                tile.Connections[(int) dir] = connection;
+                neighborTile.Connections[((int)dir + 3) % 6] = connection;
+                connection.Left = tile;
+                connection.Right = neighborTile;
+            }
+        }
     }
     public static void RemoveTile(TileCoord coord)
     {
         var tile = GetTile(coord);
-        if(tile != null) Destroy(tile.gameObject);
+        if (tile == null) return;
+        foreach (var tileConnection in tile.Connections)
+        {
+            Destroy(tileConnection.gameObject);
+        }
+        Destroy(tile.gameObject);
     }
     public static Tile GetTile(TileCoord coord)
     {
@@ -90,10 +103,8 @@ public class Board : MonoBehaviour
     }
     public static List<Tile> GetNeighbors(TileCoord coord)
     {
-        var tiles = GetTilesWithinRadius(1, coord);
-        var center = GetTile(coord);
-        if (center != null) tiles.Remove(center);
-        return tiles;
+        var tile = GetTile(coord);
+        return tile.Connections.Select(conn => conn.To(tile)).ToList();
     }
     public static List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
     {

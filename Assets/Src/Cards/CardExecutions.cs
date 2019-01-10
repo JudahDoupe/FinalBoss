@@ -91,14 +91,14 @@ public abstract class CardExecution
     {
         var options = Board.GetTilesWithinRadius(distance, Board.GetToken(player).Coord);
         options.Remove(Board.GetTile(Board.GetToken(player).Coord));
-        var tile = await Board.SelectTile(player, options);
+        var tile = await player.SelectTile(options);
 
         Board.MoveToken(player, tile.Coord);
     }
     protected async Task Attack(Player player, int damage)
     {
         var options = Board.GetNeighbors(Board.GetToken(player).Coord);
-        var tile = await Board.SelectTile(player, options);
+        var tile = await player.SelectTile(options);
 
         var damagee = Fight.Players.SingleOrDefault(x => Board.GetToken(x).Coord == tile.Coord);
         if (damagee != null) damagee.Health -= damage;
@@ -108,7 +108,7 @@ public abstract class CardExecution
         var options = Board.GetTilesWithinRadius(radius, Board.GetToken(player).Coord);
         Board.GetTilesWithinRadius(1, Board.GetToken(player).Coord).ForEach(x => options.Remove(x));
 
-        var tile = await Board.SelectTile(player, options);
+        var tile = await player.SelectTile(options);
         if (tile == null) return;
         var tilesToRemove = Board.GetTilesWithinRadius(1, tile.Coord);
         tilesToRemove.ForEach(t => Board.RemoveTile(t.Coord));

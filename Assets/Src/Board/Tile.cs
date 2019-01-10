@@ -30,10 +30,6 @@ public class Tile : NetworkBehaviour
         _model.SetActive(IsSolid);
     }
 
-    public void Connect(ConnectionDirection direction, Tile tile)
-    {
-        Connections[(int)direction] = new Connection(this, tile);
-    }
     public void SelectTile()
     {
         Player.LocalPlayer.CmdSelectTile(Coord.R, Coord.Q);
@@ -50,25 +46,6 @@ public class Tile : NetworkBehaviour
     {
         Coord = new TileCoord(r,q);
         transform.position = Coord.Position;
-    }
-}
-
-public class Connection
-{
-    private Tile _from;
-    private Tile _to;
-
-    public Connection(Tile from, Tile to)
-    {
-        _from = from;
-        _to = to;
-    }
-
-    public Tile To(Tile from)
-    {
-        if (from == _from) return _to;
-        else if (from == _to) return _from;
-        else return null;
     }
 }
 
@@ -104,14 +81,4 @@ public class TileCoord
         VerticalOffset = random.Next(-300, 300) * 0.0001f;
     }
 
-}
-
-public enum ConnectionDirection
-{
-    North = 0,
-    NorthEast = 1,
-    SouthEast = 2,
-    South = 3,
-    SouthWest = 4,
-    NorthWest = 5,
 }
