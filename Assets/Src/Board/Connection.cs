@@ -7,18 +7,34 @@ public class Connection : NetworkBehaviour
 {
     public Tile Left;
     public Tile Right;
+    public bool Traversable => _wall.activeSelf;
+
+    private GameObject _wall;
+
+    void Start()
+    {
+        _wall = transform.Find("Wall").gameObject;
+        _wall.SetActive(false);
+    }
 
     void Update()
     {
         transform.position = Vector3.Lerp(Left.transform.position, Right.transform.position, 0.5f);
+        transform.LookAt(Left.transform.position);
     }
 
-    public Tile To(Tile from)
+    public Tile From(Tile from)
     {
         if (from == Left) return Right;
         else if (from == Right) return Left;
         else return null;
     }
+
+    [ClientRpc]
+    public void RpcBuildWall()
+    {
+        _wall.SetActive(true);
+    } 
 }
 
 public enum ConnectionDirection

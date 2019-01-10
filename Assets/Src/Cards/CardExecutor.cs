@@ -22,6 +22,8 @@ public class CardExecutor : MonoBehaviour{
                 return new Punch();
             case "Bomb":
                 return new Bomb();
+            case "Build Wall":
+                return new BuildWall();
             default:
                 return null;
         }

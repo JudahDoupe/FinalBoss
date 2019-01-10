@@ -86,8 +86,9 @@ public class Board : MonoBehaviour
         if (tile == null) return;
         foreach (var tileConnection in tile.Connections)
         {
-            Destroy(tileConnection.gameObject);
+            if(tileConnection != null) Destroy(tileConnection.gameObject);
         }
+        Tiles.Remove(coord);
         Destroy(tile.gameObject);
     }
     public static Tile GetTile(TileCoord coord)
@@ -104,7 +105,7 @@ public class Board : MonoBehaviour
     public static List<Tile> GetNeighbors(TileCoord coord)
     {
         var tile = GetTile(coord);
-        return tile.Connections.Select(conn => conn.To(tile)).ToList();
+        return tile.Connections.Select(conn => conn.From(tile)).ToList();
     }
     public static List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
     {

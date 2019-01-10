@@ -74,6 +74,23 @@ public class Bomb : CardExecution
         return true;
     }
 }
+public class BuildWall : CardExecution
+{
+    public BuildWall()
+    {
+        Name = "Build Wall";
+        Initiative = 10;
+        Actions = new List<ActionType> { ActionType.Special, ActionType.Special };
+    }
+    public override async Task<bool> Play(Player player)
+    {
+        var tokenTile = Board.GetTile(Board.GetToken(player).Coord);
+        var options = tokenTile.Connections.Where(conn => conn != null).Select(conn => conn.From(tokenTile)).ToList();
+        var tile = await player.SelectTile(options);
+        tile.Connections.First(conn => conn.From(tile) == tokenTile).RpcBuildWall();
+        return true;
+    }
+}
 
 public abstract class CardExecution
 {
