@@ -25,10 +25,10 @@ public class Connection : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcSetPosition(int lr, int lq, int rr, int rq)
+    public void RpcSetPosition(int leftR, int leftQ, int rightR, int rightQ)
     {
-        var left = new TileCoord(lr,lq);
-        var right = new TileCoord(rr,rq);
+        var left = new TileCoord(leftR,leftQ);
+        var right = new TileCoord(rightR,rightQ);
         transform.position = Vector3.Lerp(left.Position, right.Position, 0.5f);
         transform.LookAt(left.Position);
     }

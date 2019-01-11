@@ -64,7 +64,7 @@ public class TileCoord
     //World Coordinates
     private float VerticalOffset { get; }
     private Vector3 Axis => new Vector3(0.5f, 0, 0.866f).normalized;
-    public Vector3 Position => Axis * R + Vector3.right * Q + Vector3.up * VerticalOffset;
+    public Vector3 Position => Vector3.Scale(Axis * R + Vector3.right * Q + Vector3.up * VerticalOffset, new Vector3(1, 0, 1));
 
     public TileCoord(int x, int y, int z)
     {
