@@ -78,6 +78,7 @@ public class Board : MonoBehaviour
                 neighborTile.Connections[((int)dir + 3) % 6] = connection;
                 connection.Left = tile;
                 connection.Right = neighborTile;
+                connection.RpcSetPosition(coord.R, coord.Q, neighborCoord.R, neighborCoord.Q);
             }
         }
     }

@@ -17,12 +17,6 @@ public class Connection : NetworkBehaviour
         _wall.SetActive(false);
     }
 
-    void Update()
-    {
-        transform.position = Vector3.Lerp(Left.transform.position, Right.transform.position, 0.5f);
-        transform.LookAt(Left.transform.position);
-    }
-
     public Tile From(Tile from)
     {
         if (from == Left) return Right;
@@ -30,6 +24,14 @@ public class Connection : NetworkBehaviour
         else return null;
     }
 
+    [ClientRpc]
+    public void RpcSetPosition(int lr, int lq, int rr, int rq)
+    {
+        var left = new TileCoord(lr,lq);
+        var right = new TileCoord(rr,rq);
+        transform.position = Vector3.Lerp(left.Position, right.Position, 0.5f);
+        transform.LookAt(left.Position);
+    }
     [ClientRpc]
     public void RpcBuildWall()
     {
