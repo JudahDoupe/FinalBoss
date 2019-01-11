@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Networking;
 using Random = UnityEngine.Random;
@@ -102,10 +103,16 @@ public class Board : MonoBehaviour
     {
         return Tiles.RandomValue();
     }
+    public static List<Tile> GetAllTiles()
+    {
+        return Enumerable.ToList(Tiles.Values);
+    }
     public static List<Tile> GetNeighbors(TileCoord coord)
     {
         var tile = GetTile(coord);
-        return tile.Connections.Select(conn => conn.From(tile)).ToList();
+        var traversableConnections = tile.Connections.Where(x => x != null && x.Traversable).ToList();
+        var tiles = traversableConnections.Select(conn => conn.From(tile)).ToList();
+        return tiles;
     }
     public static List<Tile> GetTilesWithinRadius(int radius, TileCoord coord)
     {
@@ -126,9 +133,29 @@ public class Board : MonoBehaviour
         }
         return tiles;
     }
-    public static List<Tile> GetAllTiles()
+    public static List<Tile> GetTilesWithinDistance(int distance, TileCoord coord)
     {
-        return Enumerable.ToList(Tiles.Values);
+        var allTiles = new List<Tile> { GetTile(coord) };
+        var prevTiles = new List<Tile> { GetTile(coord) };
+        var newTiles = new List<Tile>();
+        for (int i = 0; i < distance; i++)
+        {
+            foreach (var tile in prevTiles)
+            {
+                var neighbors = GetNeighbors(tile.Coord);
+                var uniqueNeighbors = neighbors.Where(x => !allTiles.Contains(x) && !prevTiles.Contains(x) && !newTiles.Contains(x));
+                newTiles.AddRange(uniqueNeighbors);
+            }
+            allTiles.AddRange(newTiles);
+            prevTiles = newTiles;
+            newTiles = new List<Tile>();
+        }
+
+        return allTiles;
+    }
+    public static List<Tile> GetTilesAlongPath(TileCoord start, TileCoord end)
+    {
+        return new Path(GetTile(start), GetTile(end)).Tiles.ToList();
     }
 
     public static void AddToken(Player player, int TokenId)
@@ -144,11 +171,23 @@ public class Board : MonoBehaviour
     public static void MoveToken(Player player, TileCoord coord, bool snapToTile = false)
     {
         var token = GetToken(player);
-        token.Coord = coord;
         if (snapToTile)
+        {
             token.RpcSetCoord(coord.R, coord.Q);
+        }
         else
-            token.RpcMoveToCoord(coord.R,coord.Q);
+        {
+            var tiles = GetTilesAlongPath(token.Coord, coord);
+            var rs = new List<int>();
+            var qs = new List<int>();
+            foreach (var tile in tiles)
+            {
+                rs.Add(tile.Coord.R);
+                qs.Add(tile.Coord.Q);
+            }
+            token.RpcMoveAlongPath(rs.ToArray(),qs.ToArray());
+        }
+        token.Coord = coord;
     }
     public static Token GetToken(Player player)
     {
@@ -176,5 +215,59 @@ public class TileCoordComparer : IEqualityComparer<TileCoord>
     public int GetHashCode(TileCoord obj)
     {
         return obj.Q.GetHashCode() + obj.R.GetHashCode();
+    }
+}
+
+public class Path
+{
+    public Stack<Tile> Tiles = new Stack<Tile>();
+
+    private List<Node> _open = new List<Node>();
+    private List<Node> _closed = new List<Node>();
+
+    public Path(Tile start, Tile end)
+    {
+        var startNode = new Node {tile = start, distance = 0, prev = null, cost = Vector3.Distance(start.transform.position, end.transform.position)};
+        _open.Add(startNode);
+
+        while (_open.Any())
+        {
+            _open.OrderBy(x => x.cost);
+            var current = _open[0];
+            _open.Remove(current);
+            _closed.Add(current);
+
+            if (current.tile == end)
+            {
+                while (current.prev != null)
+                {
+                    Tiles.Push(current.tile);
+                    current = current.prev;
+                }
+                return;
+            }
+
+            var neighbors = new List<Node>();
+            foreach (var neighborTile in current.tile.Connections.Where(x => x != null && x.Traversable).Select(conn => conn.From(current.tile)))
+            {
+                var neighbor = new Node
+                {
+                    prev = current,
+                    tile = neighborTile,
+                    distance = current.distance + Vector3.Distance(neighborTile.transform.position, current.tile.transform.position),
+                    cost = Vector3.Distance(neighborTile.transform.position, end.transform.position)
+                };
+                if (_closed.Contains(neighbor)) continue;
+                if (!_open.Contains(neighbor)) _open.Add(neighbor);
+            }
+        }
+    }
+
+    public class Node
+    {
+        public Tile tile;
+        public Node prev;
+        public float distance;
+        public float cost;
     }
 }

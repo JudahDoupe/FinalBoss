@@ -43,7 +43,11 @@ public class Player : NetworkBehaviour
 
     public async Task<Tile> SelectTile(List<Tile> options)
     {
-        if (options.Count == 0) return null;
+        if (options.Count == 0)
+        {
+            Debug.Log("Cannot select tile is no ooptions are provided");
+            return null;
+        }
         foreach (var tile in options)
         {
             tile.TargetIsSelectable(connectionToClient, true);

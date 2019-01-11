@@ -7,7 +7,7 @@ public class Connection : NetworkBehaviour
 {
     public Tile Left;
     public Tile Right;
-    public bool Traversable => _wall.activeSelf;
+    public bool Traversable => !_wall.activeSelf;
 
     private GameObject _wall;
 

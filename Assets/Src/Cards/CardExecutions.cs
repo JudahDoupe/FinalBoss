@@ -84,11 +84,14 @@ public class BuildWall : CardExecution
     }
     public override async Task<bool> Play(Player player)
     {
-        var tokenTile = Board.GetTile(Board.GetToken(player).Coord);
-        var options = tokenTile.Connections.Where(conn => conn != null).Select(conn => conn.From(tokenTile)).ToList();
+        var options = Board.GetNeighbors(Board.GetToken(player).Coord);
         var tile = await player.SelectTile(options);
-        tile.Connections.First(conn => conn.From(tile) == tokenTile).RpcBuildWall();
+        tile.Connections.First(conn => conn.From(tile) == Board.GetTile(Board.GetToken(player).Coord)).RpcBuildWall();
         return true;
+    }
+    public override bool isPlayable(Player player)
+    {
+        return base.isPlayable(player) && Board.GetNeighbors(Board.GetToken(player).Coord).Count > 1;
     }
 }
 
@@ -101,16 +104,16 @@ public abstract class CardExecution
     public abstract Task<bool> Play(Player player);
     public virtual bool isPlayable(Player player)
     {
-        return Fight.ActionNumber + Actions.Count < Fight.ActionsPerTurn;
+        return Fight.ActionNumber + Actions.Count <= Fight.ActionsPerTurn;
     }
 
     protected async Task Move(Player player, int distance)
     {
-        var options = Board.GetTilesWithinRadius(distance, Board.GetToken(player).Coord);
+        var options = Board.GetTilesWithinDistance(distance, Board.GetToken(player).Coord);
         options.Remove(Board.GetTile(Board.GetToken(player).Coord));
         var tile = await player.SelectTile(options);
-
-        Board.MoveToken(player, tile.Coord);
+        if(tile != null) Board.MoveToken(player, tile.Coord);
+        else Debug.Log("No tile was selected");
     }
     protected async Task Attack(Player player, int damage)
     {

@@ -72,6 +72,7 @@ public class Fight : MonoBehaviour
         ActionNumber = 0;
     }
 }
+
 public enum ActionType
 {
     Movement,

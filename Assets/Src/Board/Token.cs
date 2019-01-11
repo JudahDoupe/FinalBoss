@@ -55,8 +55,30 @@ public class Token : NetworkBehaviour
         this.r = r;
     }
     [ClientRpc]
+    public void RpcMoveAlongPath(int[] rs, int[] qs)
+    {
+        var coords = new List<TileCoord>();
+        for (int i = 0; i < rs.Length; i++)
+        {
+            coords.Add(new TileCoord(rs[i], qs[i]));
+        }
+        StartCoroutine(MoveAlongPath(coords));
+    }
+    [ClientRpc]
     public void RpcClearCoord()
     {
         Coord = null;
+    }
+
+    private IEnumerator MoveAlongPath(List<TileCoord> coords)
+    {
+        foreach (var tileCoord in coords)
+        {
+            Coord = tileCoord;
+            while (Vector3.Distance(transform.position, Coord.Position) > 0.05f)
+            {
+                yield return new WaitForUpdate();
+            }
+        }
     }
 }
