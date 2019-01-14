@@ -31,7 +31,9 @@ public class Token : NetworkBehaviour
         else
         {
             _model.SetActive(true);
-            transform.rotation = FindObjectOfType<Camera>()?.transform.rotation ?? transform.rotation;
+            var targetRotation = FindObjectOfType<Camera>()?.transform.eulerAngles ?? transform.eulerAngles;
+            targetRotation.Scale(new Vector3(0, 1, 0));
+            transform.eulerAngles = targetRotation;
 
             if (Vector3.Distance(transform.position, Coord.Position) > Speed * Time.deltaTime)
             {

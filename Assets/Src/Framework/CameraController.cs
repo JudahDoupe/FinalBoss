@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PostProcessing;
 
 public class CameraController : MonoBehaviour {
 
@@ -10,16 +11,20 @@ public class CameraController : MonoBehaviour {
     public float ZoomSpeed = 5;
 
     private Camera _camera;
+    private PostProcessingProfile _postProfile;
+
     private Vector3 _dragOrigin;
     private Vector3 _cameraOrigin;
+
     private Vector3 _targetPosition;
     private Vector3 _targetRootPosition;
 
     void Start()
     {
         _camera = GetComponent<Camera>();
-        _targetPosition = transform.localPosition;
-        _targetRootPosition = transform.parent.position;
+        _targetRootPosition = new Vector3(0,0,0);
+        _targetPosition = _targetRootPosition - transform.forward * 1;
+        _postProfile = GetComponent<PostProcessingBehaviour>().profile;
     }
 
     void LateUpdate()
@@ -27,6 +32,11 @@ public class CameraController : MonoBehaviour {
         var move = Drag() || Rotate() || Zoom();
         transform.parent.position = Vector3.Lerp(transform.parent.position, _targetRootPosition, Time.smoothDeltaTime * MoveSpeed);
         transform.localPosition = Vector3.Lerp(transform.localPosition, _targetPosition, Time.smoothDeltaTime * MoveSpeed);
+
+        var depthOfField = _postProfile.depthOfField.settings;
+        depthOfField.focusDistance = Vector3.Distance(transform.position, _targetRootPosition);
+        depthOfField.aperture = 0.55f * Mathf.Pow(depthOfField.focusDistance,2) - 5.15f * depthOfField.focusDistance + 12.44f;
+        _postProfile.depthOfField.settings = depthOfField;
     }
 
     private bool Drag()
@@ -68,7 +78,7 @@ public class CameraController : MonoBehaviour {
         var scroll = Input.GetAxis("Mouse ScrollWheel") * ZoomSpeed;
         if (scroll == 0) return false;
         var target = _targetPosition + transform.parent.InverseTransformDirection(transform.forward) * scroll;
-        if (target.y > 1 && target.y < 3)
+        if (target.y > 0 && target.y < 2)
         {
             _targetPosition = target;
         }
