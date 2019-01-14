@@ -34,8 +34,8 @@ public class CameraController : MonoBehaviour {
         transform.localPosition = Vector3.Lerp(transform.localPosition, _targetPosition, Time.smoothDeltaTime * MoveSpeed);
 
         var depthOfField = _postProfile.depthOfField.settings;
-        depthOfField.focusDistance = Vector3.Distance(transform.position, _targetRootPosition);
-        depthOfField.aperture = 0.55f * Mathf.Pow(depthOfField.focusDistance,2) - 5.15f * depthOfField.focusDistance + 12.44f;
+        depthOfField.focusDistance = Vector3.Distance(transform.localPosition, Vector3.zero);
+        depthOfField.aperture = Mathf.Min(10 / Mathf.Pow(depthOfField.focusDistance,2) + 0.5f, 10);
         _postProfile.depthOfField.settings = depthOfField;
     }
 
