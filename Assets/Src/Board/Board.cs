@@ -92,6 +92,11 @@ public class Board : MonoBehaviour
         }
         Tiles.Remove(coord);
         Destroy(tile.gameObject);
+        foreach (var playerToken in PlayerTokens.Values)
+        {
+            if (playerToken.Coord == coord)
+                playerToken.RpcClearCoord();
+        }
     }
     public static Tile GetTile(TileCoord coord)
     {
