@@ -7,9 +7,6 @@ using UnityEngine.Networking;
 
 public class Token : NetworkBehaviour
 {
-    public int q;
-    public int r;
-    public bool isCoord;
     [CanBeNull]
     public TileCoord Coord;
     [HideInInspector]
@@ -20,10 +17,10 @@ public class Token : NetworkBehaviour
     private void Start()
     {
         _model = transform.Find("Model").gameObject;
+        Coord = null;
     }
     private void Update ()
     {
-        isCoord = Coord == null;
         if (Coord == null)
         {
             _model.SetActive(false);
@@ -53,8 +50,6 @@ public class Token : NetworkBehaviour
     public void RpcMoveToCoord(int r, int q)
     {
         Coord = new TileCoord(r, q);
-        this.q = q;
-        this.r = r;
     }
     [ClientRpc]
     public void RpcMoveAlongPath(int[] rs, int[] qs)

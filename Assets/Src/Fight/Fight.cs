@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -8,7 +10,8 @@ using UnityEngine.Networking;
 public class Fight : MonoBehaviour
 {
     public const int ActionsPerTurn = 6;
-    public const int MaxPlayers = 2;
+    public static int MaxPlayers = 1;
+    public static NetworkManager NetworkManager;
     
     public static Player ActivePlayer;
     public static List<Player> Players = new List<Player>();
@@ -16,6 +19,30 @@ public class Fight : MonoBehaviour
 
     public static ActionType[] TurnActions { get; private set; }
     public static int ActionNumber { get; private set; }
+
+    void Start()
+    {
+        NetworkManager = GetComponent<NetworkManager>();
+    }
+
+    public void SetIpAddress(string ipAddress)
+    {
+        NetworkManager.networkAddress = ipAddress;
+    }
+    public void StartGame(int maxPlayers)
+    {
+        NetworkManager.networkAddress = "localhost";
+        MaxPlayers = maxPlayers;
+        NetworkManager.StartHost();
+    }
+    public void JoinGame()
+    {
+        NetworkManager.StartClient();
+    }
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 
     public static void JoinFight(Player player)
     {
@@ -29,6 +56,7 @@ public class Fight : MonoBehaviour
         Board.Build();
 
         EstablishTurnOrder();
+        System.Threading.Thread.Sleep(1000);
         Players.ForEach(p => p.TargetWatchGame(p.connectionToClient));
         NextTurn();
     }

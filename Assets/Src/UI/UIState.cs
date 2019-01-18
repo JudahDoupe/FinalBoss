@@ -9,17 +9,28 @@ public class UIState : MonoBehaviour
     public GameObject Decks;
     public Hand Hand;
     public Button Next;
+    public Loading Loading;
 
     public void HideAll()
     {
+        SetLoadingVisible(false);
         SetHandVisible(false);
         SetActionTimerVisible(false);
         SetDecksVisible(false);
         SetButtonsVisible(false);
     }
 
+    public void ShowLoadingState()
+    {
+        SetLoadingVisible(true);
+        SetHandVisible(false);
+        SetActionTimerVisible(false);
+        SetDecksVisible(false);
+        SetButtonsVisible(false);
+    }
     public void ShowDrawState()
     {
+        SetLoadingVisible(false);
         SetHandVisible(true);
         SetActionTimerVisible(false);
         SetDecksVisible(true);
@@ -27,6 +38,7 @@ public class UIState : MonoBehaviour
     }
     public void ShowObserveState()
     {
+        SetLoadingVisible(false);
         SetHandVisible(false);
         SetActionTimerVisible(true);
         SetDecksVisible(false);
@@ -34,6 +46,7 @@ public class UIState : MonoBehaviour
     }
     public void ShowPlayState()
     {
+        SetLoadingVisible(false);
         SetButtonsVisible(true);
         SetActionTimerVisible(true);
         SetDecksVisible(false);
@@ -55,5 +68,9 @@ public class UIState : MonoBehaviour
     public void SetButtonsVisible(bool isVisible)
     {
         Next.gameObject.SetActive(isVisible);
+    }
+    public void SetLoadingVisible(bool isVisible)
+    {
+        Loading.SetVisible(isVisible);
     }
 }

@@ -24,7 +24,7 @@ public class Player : NetworkBehaviour
 
     private void Start()
     {
-        UI.HideAll();
+        UI.ShowLoadingState();
         CmdJoinGame();
 
         if (!isLocalPlayer) Camera.gameObject.SetActive(false);

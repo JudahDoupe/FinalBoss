@@ -16,7 +16,7 @@ public class ActionCounter : MonoBehaviour {
     private RectTransform _uiTransform;
     private Vector2 _targetPos;
 
-    void Start()
+    void Awake()
     {
         _uiTransform = GetComponent<RectTransform>();
         _targetPos = _uiTransform.anchoredPosition;
