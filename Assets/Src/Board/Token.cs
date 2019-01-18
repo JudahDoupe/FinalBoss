@@ -12,11 +12,15 @@ public class Token : NetworkBehaviour
     [HideInInspector]
     public float Speed = 1;
 
+    public Player Player;
+
     private GameObject _model;
+    private GameObject _healthBar;
 
     private void Start()
     {
         _model = transform.Find("Model").gameObject;
+        _healthBar = _model.transform.Find("Health").Find("Bar").gameObject;
         Coord = null;
     }
     private void Update ()
@@ -28,6 +32,7 @@ public class Token : NetworkBehaviour
         else
         {
             _model.SetActive(true);
+            _healthBar.transform.localScale = new Vector3(Player.Health / 20f, _healthBar.transform.localScale.y, _healthBar.transform.localScale.z);
             var targetRotation = FindObjectOfType<Camera>()?.transform.eulerAngles ?? transform.eulerAngles;
             targetRotation.Scale(new Vector3(0, 1, 0));
             transform.eulerAngles = targetRotation;
@@ -65,6 +70,12 @@ public class Token : NetworkBehaviour
     public void RpcClearCoord()
     {
         Coord = null;
+    }
+
+    [ClientRpc]
+    public void RpcSetPlayer(NetworkInstanceId playerId)
+    {
+        Player = FindObjectsOfType<Player>().FirstOrDefault(x => x.netId == playerId);
     }
 
     private IEnumerator MoveAlongPath(List<TileCoord> coords)

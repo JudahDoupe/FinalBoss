@@ -8,9 +8,7 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
-    [SyncVar]
     public int Health = 20;
-    [SyncVar]
     public int Initiative = 0;
 
     public List<Deck> Decks;
@@ -98,6 +96,11 @@ public class Player : NetworkBehaviour
     {
         CardExecutor.PlayCard(connectionToClient, cardName);
     }
+    [Command]
+    public void CmdDie()
+    {
+        Fight.EndFight();
+    }
 
     /* MESSAGES FROM SERVER */
 
@@ -140,5 +143,25 @@ public class Player : NetworkBehaviour
     public void RpcClearActions()
     {
         UI.ActionCounter.ClearActions();
+    }
+    [ClientRpc]
+    public void RpcAddDamage(int amount)
+    {
+        Health -= amount;
+        if (Health <= 0)
+        {
+            Health = 0;
+            CmdDie();
+        }
+    }
+    [ClientRpc]
+    public void RpcAddInitiative(int amount)
+    {
+        Initiative += amount;
+    }
+    [ClientRpc]
+    public void RpcClearInitiative()
+    {
+        Initiative = 0;
     }
 }

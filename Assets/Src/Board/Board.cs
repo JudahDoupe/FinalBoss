@@ -169,17 +169,22 @@ public class Board : MonoBehaviour
         if (GetToken(player) != null) return;
 
         var token = Instantiate(_tokenPrefabs[TokenId]).GetComponent<Token>(); ;
-        NetworkServer.Spawn(token.gameObject);
         token.Coord = null;
+        token.Player = player;
+        NetworkServer.Spawn(token.gameObject);
         token.RpcClearCoord();
+        token.RpcSetPlayer(player.netId);
         PlayerTokens.Add(player, token);
     }
     public static void MoveToken(Player player, TileCoord coord, bool snapToTile = false)
     {
         var token = GetToken(player);
+        var currentTile = GetTile(token.Coord);
+        if (currentTile != null) currentTile.Token = null;
         if (snapToTile)
         {
             token.RpcSetCoord(coord.R, coord.Q);
+            GetTile(coord).Token = token;
         }
         else
         {
@@ -192,6 +197,7 @@ public class Board : MonoBehaviour
                 qs.Add(tile.Coord.Q);
             }
             token.RpcMoveAlongPath(rs.ToArray(),qs.ToArray());
+            tiles.Last().Token = token;
         }
         token.Coord = coord;
     }

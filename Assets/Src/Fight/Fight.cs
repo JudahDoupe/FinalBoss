@@ -47,17 +47,21 @@ public class Fight : MonoBehaviour
     public static void JoinFight(Player player)
     {
         Players.Add(player);
-        Board.AddToken(player,0);
 
         if (Players.Count == MaxPlayers) StartFight();
     }
     public static void StartFight()
     {
         Board.Build();
+        System.Threading.Thread.Sleep(1000);
 
         EstablishTurnOrder();
-        System.Threading.Thread.Sleep(1000);
-        Players.ForEach(p => p.TargetWatchGame(p.connectionToClient));
+        foreach (var player in Players)
+        {
+            Board.AddToken(player,0);
+            player.TargetWatchGame(player.connectionToClient);
+        }
+
         NextTurn();
     }
     public static void NextTurn()
@@ -75,10 +79,11 @@ public class Fight : MonoBehaviour
         var players = new List<Player>(Players);
         players.OrderBy(x => x.Initiative);
         _turnOrder = new Queue<Player>(players);
+        Players.ForEach(x => x.RpcClearInitiative());
     }
     public static void EndFight()
     {
-        Application.Quit();
+        NetworkManager.StopServer();
     }
 
     public static void UseActions(ActionType type)

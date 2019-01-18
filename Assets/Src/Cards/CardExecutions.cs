@@ -59,6 +59,10 @@ public class Punch : CardExecution
         await Attack(player, 2);
         return true;
     }
+    public override bool isPlayable(Player player)
+    {
+        return base.isPlayable(player) && Board.GetNeighbors(Board.GetToken(player).Coord).Any(x => x.Token != null);
+    }
 }
 public class Bomb : CardExecution
 {
@@ -117,11 +121,10 @@ public abstract class CardExecution
     }
     protected async Task Attack(Player player, int damage)
     {
-        var options = Board.GetNeighbors(Board.GetToken(player).Coord);
+        var options = Board.GetNeighbors(Board.GetToken(player).Coord).Where(x => x.Token != null).ToList();
         var tile = await player.SelectTile(options);
 
-        var damagee = Fight.Players.SingleOrDefault(x => Board.GetToken(x).Coord == tile.Coord);
-        if (damagee != null) damagee.Health -= damage;
+        tile.Token.Player.RpcAddDamage(damage);
     }
     protected async Task Explode(Player player, int radius)
     {

@@ -47,7 +47,7 @@ public class CardExecutor : MonoBehaviour{
             var wasPlayed = await (card?.Play(player) ?? new Task<bool>(() => false));
             if (wasPlayed)
             {
-                player.Initiative += card.Initiative;
+                player.RpcAddInitiative(card.Initiative);
                 foreach (var cardAction in card.Actions)
                 {
                     Fight.UseActions(cardAction);
